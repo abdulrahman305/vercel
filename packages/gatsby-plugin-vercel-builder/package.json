@@ -16,7 +16,7 @@
     "build": "node ../../utils/build-builder.mjs"
   },
   "dependencies": {
-    "@sinclair/typebox": "0.25.24",
+    "@sinclair/typebox": "0.32.4",
     "@vercel/build-utils": "7.2.1",
     "@vercel/routing-utils": "3.0.0",
     "esbuild": "0.14.47",
