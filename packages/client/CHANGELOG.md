@@ -1,5 +1,27 @@
 # @vercel/client
 
+## 13.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`2826563ff`](https://github.com/vercel/vercel/commit/2826563ffab7ab01d3c85def2cad8c4041cd88b1)]:
+  - @vercel/build-utils@7.12.0
+
+## 13.2.0
+
+### Minor Changes
+
+- Always use v13 of create deployment API endpoint ([#11351](https://github.com/vercel/vercel/pull/11351))
+
+## 13.1.9
+
+### Patch Changes
+
+- Handle `--repo` linked in `vc deploy --prebuilt` ([#11309](https://github.com/vercel/vercel/pull/11309))
+
+- Updated dependencies [[`73b112b1f`](https://github.com/vercel/vercel/commit/73b112b1f74480e1bb941e1b754105fc7dace401)]:
+  - @vercel/build-utils@7.11.0
+
 ## 13.1.8
 
 ### Patch Changes

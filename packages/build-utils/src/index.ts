@@ -103,6 +103,7 @@ export {
 export { EdgeFunction } from './edge-function';
 export { readConfigFile } from './fs/read-config-file';
 export { normalizePath } from './fs/normalize-path';
+export { getOsRelease, getProvidedRuntime } from './os';
 
 export * from './should-serve';
 export * from './schemas';
@@ -110,3 +111,5 @@ export * from './types';
 export * from './errors';
 
 export { NODE_VERSIONS } from './fs/node-version';
+
+export { getInstalledPackageVersion } from './get-installed-package-version';
