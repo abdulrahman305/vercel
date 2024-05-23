@@ -6,8 +6,12 @@
   },
   "dependencies": {
     "next": "canary",
-    "react": "latest",
-    "react-dom": "latest"
+    "react": "19.0.0-rc-81c5ff2e04-20240521",
+    "react-dom": "19.0.0-rc-81c5ff2e04-20240521"
+  },
+  "overrides": {
+    "react": "19.0.0-rc-81c5ff2e04-20240521",
+    "react-dom": "19.0.0-rc-81c5ff2e04-20240521"
   },
   "ignoreNextjsUpdates": true
 }
