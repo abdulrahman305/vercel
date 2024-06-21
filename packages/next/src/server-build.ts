@@ -948,10 +948,7 @@ export async function serverBuild({
     const appRouterStreamingActionLambdaGroups: LambdaGroup[] = [];
 
     for (const group of appRouterLambdaGroups) {
-      if (!group.isPrerenders || group.isExperimentalPPR) {
-        group.isStreaming = true;
-      }
-
+      group.isStreaming = true;
       group.isAppRouter = true;
 
       // We create a streaming variant of the Prerender lambda group
@@ -1364,6 +1361,7 @@ export async function serverBuild({
     isCorrectNotFoundRoutes,
     isEmptyAllowQueryForPrendered,
     isAppPPREnabled,
+    hasActionOutputSupport,
   });
 
   await Promise.all(
