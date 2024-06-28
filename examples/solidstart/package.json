@@ -12,7 +12,7 @@
     "vite": "^4.3.8"
   },
   "dependencies": {
-    "@solidjs/meta": "^0.28.5",
+    "@solidjs/meta": "^0.29.3",
     "@solidjs/router": "^0.8.2",
     "solid-js": "^1.7.5",
     "solid-start": "^0.2.26",
