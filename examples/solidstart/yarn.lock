@@ -2493,10 +2493,15 @@ semver@^7.3.5:
   dependencies:
     lru-cache "^6.0.0"
 
-seroval@^0.5.0:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/seroval/-/seroval-0.5.1.tgz#e6d17365cdaaae7e50815c7e0bcd7102facdadf3"
-  integrity sha512-ZfhQVB59hmIauJG5Ydynupy8KHyr5imGNtdDhbZG68Ufh1Ynkv9KOYOAABf71oVbQxJ8VkWnMHAjEHE7fWkH5g==
+seroval-plugins@^1.0.3:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/seroval-plugins/-/seroval-plugins-1.0.5.tgz#eeded50d736d5e1dba142a72b0188df9f4e42b6d"
+  integrity sha512-8+pDC1vOedPXjKG7oz8o+iiHrtF2WswaMQJ7CKFpccvSYfrzmvKY9zOJWCg+881722wIHfwkdnRmiiDm9ym+zQ==
+
+seroval@^1.0.4:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.0.5.tgz#d71ee540d936babaed92f56eda3e52d8e2a3deed"
+  integrity sha512-TM+Z11tHHvQVQKeNlOUonOWnsNM+2IBwZ4vwoi4j3zKzIpc5IDw8WPwCfcc8F17wy6cBcJGbZbFOR0UCuTZHQA==
 
 set-blocking@^2.0.0:
   version "2.0.0"
@@ -2522,13 +2527,14 @@ sirv@^2.0.2, sirv@^2.0.3:
     mrmime "^1.0.0"
     totalist "^3.0.0"
 
-solid-js@^1.7.5:
-  version "1.7.5"
-  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.7.5.tgz#2ef7834c6c8eef9d1b46c25b1c51da4c67492a13"
-  integrity sha512-GfJ8na1e9FG1oAF5xC24BM+ATLym0sfH+ZblkbBFpueYdq3fWAoA5Ve+jGeIeLI7jmMGfa0rUaKruszNm2sH8w==
+solid-js@^1.8.16:
+  version "1.8.17"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.8.17.tgz#780ed6f0fd8633009d1b3c29d56bf6b6bb33bd50"
+  integrity sha512-E0FkUgv9sG/gEBWkHr/2XkBluHb1fkrHywUgA6o6XolPDCJ4g1HaLmQufcBBhiF36ee40q+HpG/vCZu7fLpI3Q==
   dependencies:
     csstype "^3.1.0"
-    seroval "^0.5.0"
+    seroval "^1.0.4"
+    seroval-plugins "^1.0.3"
 
 solid-refresh@^0.5.0:
   version "0.5.2"
