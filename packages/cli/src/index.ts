@@ -26,8 +26,6 @@ import commands from './commands';
 import pkg from './util/pkg';
 import { Output } from './util/output';
 import cmd from './util/output/cmd';
-import info from './util/output/info';
-import error from './util/output/error';
 import param from './util/output/param';
 import highlight from './util/output/highlight';
 import { parseArguments } from './util/get-args';
@@ -47,7 +45,6 @@ import * as ERRORS from './util/errors-ts';
 import { APIError } from './util/errors-ts';
 import { SENTRY_DSN } from './util/constants';
 import getUpdateCommand from './util/get-update-command';
-import { metrics, shouldCollectMetrics } from './util/metrics';
 import { getCommandName, getTitleName } from './util/pkg-name';
 import doLoginPrompt from './util/login/prompt';
 import type { AuthConfig, GlobalConfig } from '@vercel-internals/types';
@@ -55,6 +52,8 @@ import { VercelConfig } from '@vercel/client';
 import { ProxyAgent } from 'proxy-agent';
 import box from './util/output/box';
 import { execExtension } from './util/extension/exec';
+import { TelemetryEventStore } from './util/telemetry';
+import { TelemetryBaseClient } from './util/telemetry/base';
 import { help } from './args';
 import { updateCurrentTeamAfterLogin } from './util/login/update-current-team-after-login';
 
@@ -64,6 +63,13 @@ const VERCEL_AUTH_CONFIG_PATH = configFiles.getAuthConfigFilePath();
 
 const GLOBAL_COMMANDS = new Set(['help']);
 
+/*
+  By default, node throws EPIPE errors if process.stdout is being written to
+  and a user runs it through a pipe that gets closed while the process is still outputting
+  (eg, the simple case of piping a node app through head).
+
+  This suppresses those errors.
+*/
 epipebomb();
 
 // Configure the error reporting system
@@ -106,6 +112,20 @@ const main = async () => {
     debug: isDebugging,
     noColor: isNoColor,
   });
+
+  const telemetryEventStore = new TelemetryEventStore({
+    isDebug: isDebugging,
+    output,
+  });
+
+  const telemetry = new TelemetryBaseClient({
+    opts: {
+      store: telemetryEventStore,
+      output,
+    },
+  });
+
+  telemetry.trackCIVendorName();
 
   debug = output.debug;
 
@@ -193,7 +213,7 @@ const main = async () => {
     if (isErrnoException(err) && err.code === 'ENOENT') {
       config = defaultGlobalConfig;
       try {
-        configFiles.writeToConfigFile(config);
+        configFiles.writeToConfigFile(output, config);
       } catch (err: unknown) {
         output.error(
           `An unexpected error occurred while trying to save the config to "${hp(
@@ -219,7 +239,7 @@ const main = async () => {
     if (isErrnoException(err) && err.code === 'ENOENT') {
       authConfig = defaultAuthConfig;
       try {
-        configFiles.writeToAuthConfigFile(authConfig);
+        configFiles.writeToAuthConfigFile(output, authConfig);
       } catch (err: unknown) {
         output.error(
           `An unexpected error occurred while trying to write the auth config to "${hp(
@@ -264,6 +284,7 @@ const main = async () => {
     localConfig,
     localConfigPath,
     argv: process.argv,
+    telemetryEventStore,
   });
 
   // The `--cwd` flag is respected for all sub-commands
@@ -275,7 +296,7 @@ const main = async () => {
   // Gets populated to the subcommand name when a built-in is
   // provided, otherwise it remains undefined for an extension
   let subcommand: string | undefined = undefined;
-
+  let userSuppliedSubCommand: string = '';
   // Check if we are deploying something
   if (targetOrSubcommand) {
     const targetPath = join(cwd, targetOrSubcommand);
@@ -299,6 +320,7 @@ const main = async () => {
     if (subcommandExists) {
       debug(`user supplied known subcommand: "${targetOrSubcommand}"`);
       subcommand = targetOrSubcommand;
+      userSuppliedSubCommand = targetOrSubcommand;
     } else {
       debug('user supplied a possible target for deployment or an extension');
     }
@@ -324,7 +346,7 @@ const main = async () => {
     !subcommandsWithoutToken.includes(subcommand)
   ) {
     if (isTTY) {
-      output.log(info(`No existing credentials found. Please log in:`));
+      output.log(`No existing credentials found. Please log in:`);
       const result = await doLoginPrompt(client);
 
       // The login function failed, so it returned an exit code
@@ -338,8 +360,8 @@ const main = async () => {
 
       await updateCurrentTeamAfterLogin(client, output, result.teamId);
 
-      configFiles.writeToAuthConfigFile(client.authConfig);
-      configFiles.writeToConfigFile(client.config);
+      configFiles.writeToAuthConfigFile(output, client.authConfig);
+      configFiles.writeToConfigFile(output, client.config);
 
       output.debug(`Saved credentials in "${hp(VERCEL_DIR)}"`);
     } else {
@@ -441,8 +463,7 @@ const main = async () => {
         return 1;
       }
 
-      // eslint-disable-next-line no-console
-      console.error(error('Not able to load user'));
+      output.error('Not able to load user');
       return 1;
     }
 
@@ -477,8 +498,7 @@ const main = async () => {
           return 1;
         }
 
-        // eslint-disable-next-line no-console
-        console.error(error('Not able to load teams'));
+        output.error('Not able to load teams');
         return 1;
       }
 
@@ -499,12 +519,8 @@ const main = async () => {
   }
 
   let exitCode;
-  let metric: ReturnType<typeof metrics> | undefined;
-  const eventCategory = 'Exit Code';
 
   try {
-    const start = Date.now();
-
     if (!targetCommand) {
       // Set this for the metrics to record it at the end
       targetCommand = parsedArgs.args[2];
@@ -554,6 +570,7 @@ const main = async () => {
           func = require('./commands/dns').default;
           break;
         case 'domains':
+          telemetry.trackCliCommandDomains(userSuppliedSubCommand);
           func = require('./commands/domains').default;
           break;
         case 'env':
@@ -567,6 +584,12 @@ const main = async () => {
           break;
         case 'inspect':
           func = require('./commands/inspect').default;
+          break;
+        case 'install':
+          func = require('./commands/install').default;
+          break;
+        case 'integration':
+          func = require('./commands/integration').default;
           break;
         case 'link':
           func = require('./commands/link').default;
@@ -627,17 +650,6 @@ const main = async () => {
 
       exitCode = await func(client);
     }
-    const end = Date.now() - start;
-
-    if (shouldCollectMetrics) {
-      const category = 'Command Invocation';
-
-      if (!metric) metric = metrics();
-      metric
-        .timing(category, targetCommand, end, pkg.version)
-        .event(category, targetCommand, pkg.version)
-        .send();
-    }
   } catch (err: unknown) {
     if (isErrnoException(err) && err.code === 'ENOTFOUND') {
       // Error message will look like the following:
@@ -686,14 +698,6 @@ const main = async () => {
       return 1;
     }
 
-    if (shouldCollectMetrics) {
-      if (!metric) metric = metrics();
-      metric
-        .event(eventCategory, '1', pkg.version)
-        .exception(errorToString(err))
-        .send();
-    }
-
     // If there is a code we should not consider the error unexpected
     // but instead show the message. Any error that is handled by this should
     // actually be handled in the sub command instead. Please make sure
@@ -714,11 +718,8 @@ const main = async () => {
     return 1;
   }
 
-  if (shouldCollectMetrics) {
-    if (!metric) metric = metrics();
-    metric.event(eventCategory, `${exitCode}`, pkg.version).send();
-  }
-
+  // specifically don't await this, we want to fire and forget
+  telemetryEventStore.save();
   return exitCode;
 };
 
@@ -729,13 +730,11 @@ const handleRejection = async (err: any) => {
     if (err instanceof Error) {
       await handleUnexpected(err);
     } else {
-      // eslint-disable-next-line no-console
-      console.error(error(`An unexpected rejection occurred\n  ${err}`));
+      output.error(`An unexpected rejection occurred\n  ${err}`);
       await reportError(Sentry, client, err);
     }
   } else {
-    // eslint-disable-next-line no-console
-    console.error(error('An unexpected empty rejection occurred'));
+    output.error('An unexpected empty rejection occurred');
   }
 
   process.exit(1);
@@ -750,8 +749,7 @@ const handleUnexpected = async (err: Error) => {
     return;
   }
 
-  // eslint-disable-next-line no-console
-  console.error(error(`An unexpected error occurred!\n${err.stack}`));
+  output.error(`An unexpected error occurred!\n${err.stack}`);
   await reportError(Sentry, client, err);
 
   process.exit(1);
