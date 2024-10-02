@@ -9,13 +9,13 @@
   "devDependencies": {
     "solid-start-vercel": "^0.2.26",
     "typescript": "^5.0.4",
-    "vite": "^4.3.8"
+    "vite": "^5.0.0"
   },
   "dependencies": {
     "@solidjs/meta": "^0.28.5",
     "@solidjs/router": "^0.8.2",
     "solid-js": "^1.7.5",
-    "solid-start": "^0.2.26",
+    "solid-start": "^0.3.0",
     "undici": "^5.22.1"
   },
   "engines": {
