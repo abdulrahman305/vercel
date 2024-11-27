@@ -16,27 +16,20 @@ export function toHaveTelemetryEvents(
   received: TelemetryEventStore,
   expected: EventData[]
 ) {
-  const expectEventObject = (event?: EventData) =>
-    expect.objectContaining({
-      id: expect.any(String),
-      sessionId: expect.any(String),
-      key: event?.key,
-      value: event?.value,
-    });
-
   const expectEventsArray = (events: Array<EventData>) => {
     const [firstEvent] = received.readonlyEvents;
     if (events.length === 0) {
-      return expect.arrayContaining([expectEventObject()]);
+      return [];
     } else {
       const expectCommonSessionEventObject = (event?: EventData) =>
         expect.objectContaining({
           id: expect.any(String),
+          teamId: expect.any(String),
           sessionId: firstEvent?.sessionId,
           key: event?.key,
           value: event?.value,
         });
-      return expect.arrayContaining(events.map(expectCommonSessionEventObject));
+      return events.map(expectCommonSessionEventObject);
     }
   };
 

@@ -37,8 +37,11 @@ export interface GlobalConfig {
   '// Note'?: string;
   '// Docs'?: string;
   currentTeam?: string;
-  collectMetrics?: boolean;
   api?: string;
+
+  telemetry?: {
+    enabled?: boolean;
+  };
 
   // TODO: legacy - remove
   updateChannel?: string;
@@ -443,7 +446,6 @@ export type ProjectLinkedError = {
     | 'TEAM_DELETED'
     | 'PATH_IS_FILE'
     | 'INVALID_ROOT_DIRECTORY'
-    | 'MISSING_PROJECT_SETTINGS'
     | 'TOO_MANY_PROJECTS';
 };
 
