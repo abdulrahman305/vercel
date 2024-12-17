@@ -39,12 +39,12 @@
     "@vercel/go": "3.2.1",
     "@vercel/hydrogen": "1.0.9",
     "@vercel/next": "4.4.0",
-    "@vercel/node": "3.2.27",
+    "@vercel/node": "4.0.0",
     "@vercel/python": "4.5.1",
-    "@vercel/redwood": "2.1.8",
+    "@vercel/redwood": "2.1.9",
     "@vercel/remix-builder": "2.2.14",
     "@vercel/ruby": "2.1.0",
-    "@vercel/static-build": "2.5.36",
+    "@vercel/static-build": "2.5.38",
     "chokidar": "4.0.0"
   },
   "devDependencies": {
