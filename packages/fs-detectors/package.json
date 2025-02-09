@@ -23,7 +23,7 @@
   "dependencies": {
     "@vercel/error-utils": "2.0.3",
     "@vercel/frameworks": "3.4.0",
-    "@vercel/routing-utils": "5.0.0",
+    "@vercel/routing-utils": "5.0.3",
     "glob": "8.0.3",
     "js-yaml": "4.1.0",
     "json5": "2.2.2",
