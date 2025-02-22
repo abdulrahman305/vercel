@@ -41,7 +41,7 @@
     "@vercel/next": "4.4.2",
     "@vercel/node": "5.0.2",
     "@vercel/python": "4.6.0",
-    "@vercel/redwood": "2.1.12",
+    "@vercel/redwood": "2.3.0",
     "@vercel/remix-builder": "5.0.2",
     "@vercel/ruby": "2.1.0",
     "@vercel/static-build": "2.5.41",
