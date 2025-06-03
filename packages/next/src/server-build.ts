@@ -55,6 +55,7 @@ import {
   RenderingMode,
   getPostponeResumeOutput,
   getNodeMiddleware,
+  getStaticSegmentRoutes,
 } from './utils';
 import {
   nodeFileTrace,
@@ -103,14 +104,6 @@ const BUNDLED_SERVER_NEXT_VERSION = 'v13.5.4';
 
 const BUNDLED_SERVER_NEXT_PATH =
   'next/dist/compiled/next-server/server.runtime.prod.js';
-
-// Next.js 13.4.6 removed the need for the vary header because it generates a
-// hash of the request headers and adds that to the request URL.
-//
-// See:
-// https://github.com/vercel/next.js/pull/49140
-// https://github.com/vercel/next.js/pull/50970
-const NEXT_VARY_INERT_VERSION = 'v13.4.6';
 
 export async function serverBuild({
   dynamicPages,
@@ -224,7 +217,6 @@ export async function serverBuild({
     nextVersion,
     EMPTY_ALLOW_QUERY_FOR_PRERENDERED_VERSION
   );
-  const shouldSkipVaryHeader = semver.gte(nextVersion, NEXT_VARY_INERT_VERSION);
   const projectDir = requiredServerFilesManifest.relativeAppDir
     ? path.join(baseDir, requiredServerFilesManifest.relativeAppDir)
     : requiredServerFilesManifest.appDir || entryPath;
@@ -415,6 +407,11 @@ export async function serverBuild({
           // We don't want to perform the actual rewrite here, instead we want
           // to just add the headers associated with the rewrite.
           dest: undefined,
+          // We don't want to check here, so omit the check property but we do
+          // want to maintain the order of the rewrites, so add the continue
+          // property.
+          check: undefined,
+          continue: true,
           has,
           headers,
         };
@@ -494,6 +491,7 @@ export async function serverBuild({
   const lstatSema = new Sema(25);
   const lstatResults: { [key: string]: ReturnType<typeof lstat> } = {};
   const nonLambdaSsgPages = new Set<string>();
+  const static404Pages = new Set<string>(static404Page ? [static404Page] : []);
 
   Object.keys(prerenderManifest.staticRoutes).forEach(route => {
     const result = onPrerenderRouteInitial(
@@ -508,6 +506,8 @@ export async function serverBuild({
     );
 
     if (result && result.static404Page) {
+      // there can be multiple 404 pages (eg i18n) so we want to keep track of all of them
+      static404Pages.add(result.static404Page);
       static404Page = result.static404Page;
     }
 
@@ -549,10 +549,6 @@ export async function serverBuild({
     const initialTracingLabel = 'Traced Next.js server files in';
 
     console.time(initialTracingLabel);
-
-    const initialTracedFiles: {
-      [filePath: string]: FileFsRef;
-    } = {};
 
     let initialFileList: string[];
     let initialFileReasons: NodeFileTraceReasons;
@@ -657,16 +653,21 @@ export async function serverBuild({
     }
 
     debug('collecting initial Next.js server files');
-    await Promise.all(
-      initialFileList.map(
-        collectTracedFiles(
-          baseDir,
-          lstatResults,
-          lstatSema,
-          initialFileReasons,
-          initialTracedFiles
+    const initialTracedFiles: {
+      [filePath: string]: FileFsRef;
+    } = Object.fromEntries(
+      (
+        await Promise.all(
+          initialFileList.map(
+            collectTracedFiles(
+              baseDir,
+              lstatResults,
+              lstatSema,
+              initialFileReasons
+            )
+          )
         )
-      )
+      ).filter((entry): entry is [string, FileFsRef] => !!entry)
     );
 
     debug('creating initial pseudo layer');
@@ -720,36 +721,40 @@ export async function serverBuild({
       fsPath: nextServerFile,
     });
 
-    if (static404Page) {
-      // ensure static 404 page file is included in all lambdas
-      // for notFound GS(S)P support
-
+    if (static404Pages.size > 0) {
+      // If we've generated a static 404 page, it's possible that we also
+      // have a static 404 page for each locale.
       if (i18n) {
         for (const locale of i18n.locales) {
-          let static404File =
-            staticPages[path.posix.join(entryDirectory, locale, '/404')];
+          const static404Page = path.posix.join(entryDirectory, locale, '404');
+          static404Pages.add(static404Page);
+        }
+      }
 
-          if (!static404File) {
+      for (const static404Page of static404Pages) {
+        let static404File = staticPages[static404Page];
+
+        if (!static404File) {
+          // if we have a file ref already, we can use it. Otherwise, we need
+          // to create a new one, but we need to ensure it exists on disk
+          const static404FilePath = path.join(
+            pagesDir,
+            `${static404Page}.html`
+          );
+
+          if (fs.existsSync(static404FilePath)) {
             static404File = new FileFsRef({
-              fsPath: path.join(pagesDir, locale, '/404.html'),
+              fsPath: static404FilePath,
             });
-            if (!fs.existsSync(static404File.fsPath)) {
-              static404File = new FileFsRef({
-                fsPath: path.join(pagesDir, '/404.html'),
-              });
-            }
           }
+        }
+
+        // ensure each static 404 page file is included in all lambdas
+        // for notFound GS(S)P support
+        if (static404File) {
           requiredFiles[path.relative(baseDir, static404File.fsPath)] =
             static404File;
         }
-      } else {
-        const static404File =
-          staticPages[static404Page] ||
-          new FileFsRef({
-            fsPath: path.join(pagesDir, '/404.html'),
-          });
-        requiredFiles[path.relative(baseDir, static404File.fsPath)] =
-          static404File;
       }
     }
 
@@ -961,7 +966,6 @@ export async function serverBuild({
     }
 
     for (const page of mergedPageKeys) {
-      const tracedFiles: { [key: string]: FileFsRef } = {};
       const originalPagePath = getOriginalPagePath(page);
       const pageBuildTrace = getBuildTraceFile(originalPagePath);
       let fileList: string[];
@@ -1031,17 +1035,18 @@ export async function serverBuild({
         reasons = traceResult?.reasons || new Map();
       }
 
-      await Promise.all(
-        fileList.map(
-          collectTracedFiles(
-            baseDir,
-            lstatResults,
-            lstatSema,
-            reasons,
-            tracedFiles
+      const tracedFiles: {
+        [filePath: string]: FileFsRef;
+      } = Object.fromEntries(
+        (
+          await Promise.all(
+            fileList.map(
+              collectTracedFiles(baseDir, lstatResults, lstatSema, reasons)
+            )
           )
-        )
+        ).filter((entry): entry is [string, FileFsRef] => !!entry)
       );
+
       pageTraces[page] = tracedFiles;
       compressedPages[page] = (
         await createPseudoLayer({
@@ -1535,7 +1540,6 @@ export async function serverBuild({
     isEmptyAllowQueryForPrendered,
     isAppPPREnabled,
     isAppClientSegmentCacheEnabled,
-    shouldSkipVaryHeader,
   });
 
   await Promise.all(
@@ -1620,6 +1624,13 @@ export async function serverBuild({
   const isNextDataServerResolving =
     (middleware.staticRoutes.length > 0 || nodeMiddleware) &&
     semver.gte(nextVersion, NEXT_DATA_MIDDLEWARE_RESOLVING_VERSION);
+
+  const staticSegmentRoutes = isAppClientSegmentCacheEnabled
+    ? await getStaticSegmentRoutes({
+        entryDirectory,
+        routesManifest,
+      })
+    : [];
 
   const dynamicRoutes = await getDynamicRoutes({
     entryPath,
@@ -2236,9 +2247,7 @@ export async function serverBuild({
                       entryDirectory,
                       `/__index${RSC_PREFETCH_SUFFIX}`
                     ),
-                    headers: shouldSkipVaryHeader
-                      ? undefined
-                      : { vary: rscVaryHeader },
+                    headers: { vary: rscVaryHeader },
                     continue: true,
                     override: true,
                   },
@@ -2259,9 +2268,7 @@ export async function serverBuild({
                       entryDirectory,
                       `/$1${RSC_PREFETCH_SUFFIX}`
                     ),
-                    headers: shouldSkipVaryHeader
-                      ? undefined
-                      : { vary: rscVaryHeader },
+                    headers: { vary: rscVaryHeader },
                     continue: true,
                     override: true,
                   },
@@ -2276,9 +2283,7 @@ export async function serverBuild({
                 },
               ],
               dest: path.posix.join('/', entryDirectory, '/index.rsc'),
-              headers: shouldSkipVaryHeader
-                ? undefined
-                : { vary: rscVaryHeader },
+              headers: { vary: rscVaryHeader },
               continue: true,
               override: true,
             },
@@ -2295,9 +2300,7 @@ export async function serverBuild({
                 },
               ],
               dest: path.posix.join('/', entryDirectory, '/$1.rsc'),
-              headers: shouldSkipVaryHeader
-                ? undefined
-                : { vary: rscVaryHeader },
+              headers: { vary: rscVaryHeader },
               continue: true,
               override: true,
             },
@@ -2568,6 +2571,8 @@ export async function serverBuild({
             },
           ]
         : []),
+
+      ...staticSegmentRoutes,
 
       // Dynamic routes (must come after dataRoutes as dataRoutes are more
       // specific)

@@ -1,5 +1,196 @@
 # vercel
 
+## 42.3.0
+
+### Minor Changes
+
+- Version bump to respect dependency updates ([#13390](https://github.com/vercel/vercel/pull/13390))
+
+- Adding support for rolling-releases ([#13387](https://github.com/vercel/vercel/pull/13387))
+
+### Patch Changes
+
+- Updated dependencies [[`6c8e763ab63c79e12c7d5455fd79cf158f43cc77`](https://github.com/vercel/vercel/commit/6c8e763ab63c79e12c7d5455fd79cf158f43cc77)]:
+  - @vercel/node@5.2.1
+  - @vercel/redwood@2.3.3
+  - @vercel/static-build@2.7.9
+  - @vercel/hydrogen@1.2.2
+  - @vercel/remix-builder@5.4.9
+
+## 42.2.0
+
+### Minor Changes
+
+- Warn when system environment variables are not available ([#13357](https://github.com/vercel/vercel/pull/13357))
+
+- Allow configuring functions `architecture` via the `vercel.json` configuration ([#13344](https://github.com/vercel/vercel/pull/13344))
+
+### Patch Changes
+
+- Updated dependencies [[`36cd6a44bf4daf429babb430c7f1e3f7130d30ee`](https://github.com/vercel/vercel/commit/36cd6a44bf4daf429babb430c7f1e3f7130d30ee), [`3bfdaa067780bfb4dfc4190a8e2a736a02d8d403`](https://github.com/vercel/vercel/commit/3bfdaa067780bfb4dfc4190a8e2a736a02d8d403), [`0d86d9c3fa61ae91f0ed4ffe4c0c97655411468f`](https://github.com/vercel/vercel/commit/0d86d9c3fa61ae91f0ed4ffe4c0c97655411468f)]:
+  - @vercel/build-utils@10.6.0
+  - @vercel/next@4.8.0
+  - @vercel/node@5.2.0
+  - @vercel/hydrogen@1.2.1
+  - @vercel/redwood@2.3.2
+  - @vercel/remix-builder@5.4.8
+  - @vercel/static-build@2.7.8
+
+## 42.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`53496486606e7159a9267b923ff5f6dd2446a953`](https://github.com/vercel/vercel/commit/53496486606e7159a9267b923ff5f6dd2446a953)]:
+  - @vercel/remix-builder@5.4.7
+
+## 42.1.0
+
+### Minor Changes
+
+- Implement token refresh ([#13317](https://github.com/vercel/vercel/pull/13317))
+
+## 42.0.0
+
+### Major Changes
+
+- [cli] Move to v3 of `/env/pull` ([#13343](https://github.com/vercel/vercel/pull/13343))
+
+### Patch Changes
+
+- Silence the "Refreshing VERCEL_OIDC_TOKEN" log message by default (moves it to debug) ([#13350](https://github.com/vercel/vercel/pull/13350))
+
+- Ensure that traces are always flushed during build commands ([#13352](https://github.com/vercel/vercel/pull/13352))
+
+## 41.7.8
+
+### Patch Changes
+
+- fix(auth): tweak --future telemetry #13318 #13340 ([#13340](https://github.com/vercel/vercel/pull/13340))
+
+## 41.7.7
+
+### Patch Changes
+
+- Updated dependencies [[`7df2e61025bbca6bd1a0f261135e0269ec30c628`](https://github.com/vercel/vercel/commit/7df2e61025bbca6bd1a0f261135e0269ec30c628)]:
+  - @vercel/remix-builder@5.4.6
+
+## 41.7.6
+
+### Patch Changes
+
+- [cli] Bump @vercel/fun to remove deprecated package warning ([#13330](https://github.com/vercel/vercel/pull/13330))
+
+## 41.7.5
+
+### Patch Changes
+
+- Updated dependencies [[`048e73278c1649924f076449dcb14eacd7961483`](https://github.com/vercel/vercel/commit/048e73278c1649924f076449dcb14eacd7961483)]:
+  - @vercel/remix-builder@5.4.5
+
+## 41.7.4
+
+### Patch Changes
+
+- add `--future` auth telemetry ([#13318](https://github.com/vercel/vercel/pull/13318))
+
+- feat(vas): add hostname to the device auth user agent ([#13301](https://github.com/vercel/vercel/pull/13301))
+
+- Updated dependencies [[`70df3e80ce0a975852105bd6f58d1307fe302f10`](https://github.com/vercel/vercel/commit/70df3e80ce0a975852105bd6f58d1307fe302f10)]:
+  - @vercel/next@4.7.11
+  - @vercel/node@5.1.16
+  - @vercel/redwood@2.3.1
+  - @vercel/remix-builder@5.4.4
+
+## 41.7.3
+
+### Patch Changes
+
+- [cli] Remove `glob` as a dev dependency ([#13304](https://github.com/vercel/vercel/pull/13304))
+
+## 41.7.2
+
+### Patch Changes
+
+- Fix linking GitLab repositories that belong to subgroups ([#13295](https://github.com/vercel/vercel/pull/13295))
+
+## 41.7.1
+
+### Patch Changes
+
+- Updated dependencies [[`12672c836741e24efbe0c02043be0064af2f09ac`](https://github.com/vercel/vercel/commit/12672c836741e24efbe0c02043be0064af2f09ac)]:
+  - @vercel/next@4.7.10
+
+## 41.7.0
+
+### Minor Changes
+
+- Infer microfrontends.json and microfrontends.jsonc if rootDirectory not specified ([#13263](https://github.com/vercel/vercel/pull/13263))
+
+- Adds instrumentation detection to the `build` command ([#13271](https://github.com/vercel/vercel/pull/13271))
+
+### Patch Changes
+
+- Use dot directly for Vercel CLI build ([#13267](https://github.com/vercel/vercel/pull/13267))
+
+- Fix segment prefetching for PPR-disabled static routes ([#13275](https://github.com/vercel/vercel/pull/13275))
+
+- Updated dependencies [[`1569176380cf3953051254d535a9f295ae328372`](https://github.com/vercel/vercel/commit/1569176380cf3953051254d535a9f295ae328372), [`a060ae3cbef9fc271b768d9b2f4220c062c7a520`](https://github.com/vercel/vercel/commit/a060ae3cbef9fc271b768d9b2f4220c062c7a520), [`f5b99cc80ce1d15522349b159ea0a0d78533dcc7`](https://github.com/vercel/vercel/commit/f5b99cc80ce1d15522349b159ea0a0d78533dcc7)]:
+  - @vercel/node@5.1.15
+  - @vercel/next@4.7.9
+  - @vercel/static-build@2.7.7
+
+## 41.6.2
+
+### Patch Changes
+
+- Updated dependencies [[`4322c2015018da34a466e0b4cf593e538e9fd190`](https://github.com/vercel/vercel/commit/4322c2015018da34a466e0b4cf593e538e9fd190)]:
+  - @vercel/next@4.7.8
+
+## 41.6.1
+
+### Patch Changes
+
+- fix(cli): address feedback ([#13238](https://github.com/vercel/vercel/pull/13238))
+
+## 41.6.0
+
+### Minor Changes
+
+- `vercel dev` will now automatically refresh the `VERCEL_OIDC_TOKEN` environment ([#13226](https://github.com/vercel/vercel/pull/13226))
+  variable and restart the development server before it expires.
+
+### Patch Changes
+
+- fix(auth): fix rendering fallback verification link ([#13232](https://github.com/vercel/vercel/pull/13232))
+
+- Updated dependencies [[`b696b2dc8e6a2bb6c9dc1c6ce99cddf375b61559`](https://github.com/vercel/vercel/commit/b696b2dc8e6a2bb6c9dc1c6ce99cddf375b61559), [`a640944c6e2c69afab5b7f03080d8363ef4bcf5b`](https://github.com/vercel/vercel/commit/a640944c6e2c69afab5b7f03080d8363ef4bcf5b), [`f0730d4b77f158c75b119544ee8756a609f22fdf`](https://github.com/vercel/vercel/commit/f0730d4b77f158c75b119544ee8756a609f22fdf)]:
+  - @vercel/next@4.7.7
+
+## 41.5.0
+
+### Minor Changes
+
+- Add simple balance subcommand to review balances & thresholds on a given installation ([#13204](https://github.com/vercel/vercel/pull/13204))
+
+- Add new subcommand `create-threshold` to `integration-resource` command for creating & overwriting automated purchase triggers on prepayment-based integration installations ([#13218](https://github.com/vercel/vercel/pull/13218))
+
+### Patch Changes
+
+- Allow all integration categories for resource provision, send to dashboard on non-subscription plan selection ([#13220](https://github.com/vercel/vercel/pull/13220))
+
+- Updated dependencies [[`4678db252cb14ae3745ed9b691ac2c98fbf6349f`](https://github.com/vercel/vercel/commit/4678db252cb14ae3745ed9b691ac2c98fbf6349f)]:
+  - @vercel/next@4.7.6
+
+## 41.4.2
+
+### Patch Changes
+
+- Add authorization step to cli integration resource creation ([#13192](https://github.com/vercel/vercel/pull/13192))
+  Include default value of hidden metadata properties during resource provisioning
+- Updated dependencies [[`c8d301f78192c33d5a573920059809aade607c2a`](https://github.com/vercel/vercel/commit/c8d301f78192c33d5a573920059809aade607c2a), [`839fb38a007b91b4c5e197fa4bdb2cabb616357d`](https://github.com/vercel/vercel/commit/839fb38a007b91b4c5e197fa4bdb2cabb616357d)]:
+  - @vercel/python@4.7.2
+  - @vercel/next@4.7.5
+
 ## 41.4.1
 
 ### Patch Changes

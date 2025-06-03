@@ -110,6 +110,13 @@ export class TelemetryClient {
     });
   }
 
+  protected trackOidcTokenRefresh(count: number) {
+    this.track({
+      key: 'oidc-token-refresh',
+      value: `${count}`,
+    });
+  }
+
   protected trackCPUs() {
     this.track({
       key: 'cpu_count',
@@ -173,6 +180,10 @@ export class TelemetryClient {
       key: 'flag:help',
       value: subcommand ? `${command}:${subcommand}` : command,
     });
+  }
+
+  trackCliFlagFuture(command: 'login') {
+    this.track({ key: 'flag:future', value: command });
   }
 }
 

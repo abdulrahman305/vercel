@@ -1,24 +1,21 @@
 import readline from 'node:readline';
 import chalk from 'chalk';
 import * as open from 'open';
+import { eraseLines } from 'ansi-escapes';
 import type Client from '../../util/client';
 import { printError } from '../../util/error';
 import { updateCurrentTeamAfterLogin } from '../../util/login/update-current-team-after-login';
-import {
-  writeToAuthConfigFile,
-  writeToConfigFile,
-} from '../../util/config/files';
 import getGlobalPathConfig from '../../util/config/global-path';
 import { getCommandName } from '../../util/pkg-name';
-import { emoji, prependEmoji } from '../../util/emoji';
+import { emoji } from '../../util/emoji';
 import hp from '../../util/humanize-path';
 import {
   deviceAuthorizationRequest,
   processDeviceAuthorizationResponse,
   deviceAccessTokenRequest,
-  processDeviceAccessTokenResponse,
+  processTokenResponse,
   isOAuthError,
-  verifyJWT,
+  inspectToken,
 } from '../../util/oauth';
 import o from '../../output-manager';
 
@@ -56,13 +53,19 @@ export async function login(client: Client): Promise<number> {
 
   rl.question(
     `
-  ▲ Sign in to the Vercel CLI
-
-  Visit ${chalk.bold(o.link(verification_uri.replace('https://', ''), verification_uri_complete, { color: false }))} to enter ${chalk.bold(user_code)}
+  Visit ${chalk.bold(
+    o.link(
+      verification_uri.replace('https://', ''),
+      verification_uri_complete,
+      { color: false, fallback: () => verification_uri_complete }
+    )
+  )}${o.supportsHyperlink ? ` and enter ${chalk.bold(user_code)}` : ''}
   ${chalk.grey('Press [ENTER] to open the browser')}
 `,
     () => {
       open.default(verification_uri_complete);
+      o.print(eraseLines(2)); // "Waiting for authentication..." gets printed twice, this removes one when Enter is pressed
+      o.spinner('Waiting for authentication...');
       rl.close();
     }
   );
@@ -98,11 +101,10 @@ export async function login(client: Client): Promise<number> {
         `'Device Access Token response:', ${await tokenResponse.clone().text()}`
       );
 
-      const [tokenError, token] =
-        await processDeviceAccessTokenResponse(tokenResponse);
+      const [tokensError, tokens] = await processTokenResponse(tokenResponse);
 
-      if (isOAuthError(tokenError)) {
-        const { code } = tokenError;
+      if (isOAuthError(tokensError)) {
+        const { code } = tokensError;
         switch (code) {
           case 'authorization_pending':
             continue;
@@ -113,35 +115,39 @@ export async function login(client: Client): Promise<number> {
             );
             continue;
           default:
-            return tokenError.cause;
+            return tokensError.cause;
         }
       }
 
-      if (tokenError) return tokenError;
+      if (tokensError) return tokensError;
+
+      // If we get here, we throw away any possible token errors like polling, or timeouts
+      error = undefined;
+
+      o.print(eraseLines(2));
 
       // user is not currently authenticated on this machine
       const isInitialLogin = !client.authConfig.token;
 
-      // Save the user's authentication token to the configuration file.
-      client.authConfig.token = token.access_token;
-      error = undefined;
+      const [inspectError, payload] = inspectToken(tokens.access_token);
 
-      const [accessTokenError, accessToken] = await verifyJWT(
-        token.access_token
-      );
+      if (inspectError) return inspectError;
 
-      if (accessTokenError) {
-        return accessTokenError;
-      }
+      o.debug('access_token inspected');
 
-      o.debug('access_token verified');
+      client.updateAuthConfig({
+        token: tokens.access_token,
+        type: 'oauth',
+        expiresAt: Math.floor(Date.now() / 1000) + tokens.expires_in,
+      });
 
-      if (accessToken.team_id) {
-        o.debug('Current team updated');
-        client.config.currentTeam = accessToken.team_id;
-      } else {
-        o.debug('Current team deleted');
-        delete client.config.currentTeam;
+      if (payload.team_id) o.debug('Current team updated');
+      else o.debug('Current team deleted');
+
+      client.updateConfig({ currentTeam: payload.team_id });
+
+      if (tokens.refresh_token) {
+        client.updateAuthConfig({ refreshToken: tokens.refresh_token });
       }
 
       // If we have a brand new login, update `currentTeam`
@@ -149,18 +155,18 @@ export async function login(client: Client): Promise<number> {
         await updateCurrentTeamAfterLogin(client, client.config.currentTeam);
       }
 
-      writeToAuthConfigFile(client.authConfig);
-      writeToConfigFile(client.config);
+      client.writeToAuthConfigFile();
+      client.writeToConfigFile();
 
       o.debug(`Saved credentials in "${hp(getGlobalPathConfig())}"`);
 
       o.print(`
-  ${chalk.cyan('Congratulations!')} You are now signed in. In order to deploy something, run ${getCommandName()}.
+  ${chalk.cyan('Congratulations!')} You are now signed in.
 
-  ${prependEmoji(
-    `Connect your Git Repositories to deploy every branch push automatically (${chalk.bold(o.link('vercel.link/git', 'https://vercel.link/git', { color: false }))}).`,
-    emoji('tip')
-  )}\n`);
+  To deploy something, run ${getCommandName()}.
+
+  ${emoji('tip')} To deploy every commit automatically,
+  connect a Git Repository (${chalk.bold(o.link('vercel.link/git', 'https://vercel.link/git', { color: false }))}).\n`);
 
       return;
     }

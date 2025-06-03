@@ -35,6 +35,7 @@ import {
   detectBuilders,
   detectFrameworkRecord,
   detectFrameworkVersion,
+  detectInstrumentation,
   LocalFileSystemDetector,
 } from '@vercel/fs-detectors';
 import {
@@ -274,6 +275,12 @@ export default async function main(client: Client): Promise<number> {
     argv: scrubArgv(process.argv),
   };
 
+  if (!process.env.VERCEL_BUILD_IMAGE) {
+    output.warn(
+      'Build not running on Vercel. System environment variables will not be available.'
+    );
+  }
+
   const envToUnset = new Set<string>(['VERCEL', 'NOW_BUILDER']);
 
   try {
@@ -312,13 +319,15 @@ export default async function main(client: Client): Promise<number> {
     process.env.VERCEL = '1';
     process.env.NOW_BUILDER = '1';
 
-    await rootSpan
-      .child('vc.doBuild')
-      .trace(span =>
-        doBuild(client, project, buildsJson, cwd, outputDir, span)
-      );
-
-    await rootSpan.stop();
+    try {
+      await rootSpan
+        .child('vc.doBuild')
+        .trace(span =>
+          doBuild(client, project, buildsJson, cwd, outputDir, span)
+        );
+    } finally {
+      await rootSpan.stop();
+    }
 
     return 0;
   } catch (err: any) {
@@ -372,17 +381,25 @@ async function doBuild(
 
   const workPath = join(cwd, project.settings.rootDirectory || '.');
 
-  const [pkg, vercelConfig, nowConfig] = await Promise.all([
+  const [pkg, vercelConfig, nowConfig, hasInstrumentation] = await Promise.all([
     readJSONFile<PackageJson>(join(workPath, 'package.json')),
     readJSONFile<VercelConfig>(
       localConfigPath || join(workPath, 'vercel.json')
     ),
     readJSONFile<VercelConfig>(join(workPath, 'now.json')),
+    detectInstrumentation(new LocalFileSystemDetector(workPath)),
   ]);
 
   if (pkg instanceof CantParseJSONFile) throw pkg;
   if (vercelConfig instanceof CantParseJSONFile) throw vercelConfig;
   if (nowConfig instanceof CantParseJSONFile) throw nowConfig;
+
+  if (hasInstrumentation) {
+    output.debug(
+      'OpenTelemetry instrumentation detected. Automatic fetch instrumentation will be disabled.'
+    );
+    process.env.VERCEL_TRACING_DISABLE_AUTOMATIC_FETCH_INSTRUMENTATION = '1';
+  }
 
   if (vercelConfig) {
     vercelConfig[fileNameSymbol] = 'vercel.json';
