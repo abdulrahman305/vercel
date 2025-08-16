@@ -27,7 +27,7 @@ def format_headers(headers, decode=False):
         keyToList[key].append(value)
     return keyToList
 
-if 'VERCEL_IPC_FD' in os.environ or 'VERCEL_IPC_PATH' in os.environ:
+if 'VERCEL_IPC_PATH' in os.environ:
     from http.server import ThreadingHTTPServer
     import http
     import time
@@ -37,13 +37,8 @@ if 'VERCEL_IPC_FD' in os.environ or 'VERCEL_IPC_PATH' in os.environ:
     import logging
 
     start_time = time.time()
-
-    if 'VERCEL_IPC_FD' in os.environ:
-        ipc_fd = int(os.getenv("VERCEL_IPC_FD", ""))
-        sock = socket.socket(fileno=ipc_fd)
-    else:
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        sock.connect(os.getenv("VERCEL_IPC_PATH", ""))
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.connect(os.getenv("VERCEL_IPC_PATH", ""))
 
     send_message = lambda message: sock.sendall((json.dumps(message) + '\0').encode())
     storage = contextvars.ContextVar('storage', default=None)
@@ -176,12 +171,28 @@ if 'VERCEL_IPC_FD' in os.environ or 'VERCEL_IPC_PATH' in os.environ:
             if not self.parse_request():
                 return
 
+            if self.path == '/_vercel/ping':
+                self.send_response(200)
+                self.end_headers()
+                return
+
             invocationId = self.headers.get('x-vercel-internal-invocation-id')
             requestId = int(self.headers.get('x-vercel-internal-request-id'))
             del self.headers['x-vercel-internal-invocation-id']
             del self.headers['x-vercel-internal-request-id']
             del self.headers['x-vercel-internal-span-id']
             del self.headers['x-vercel-internal-trace-id']
+
+            send_message({
+                "type": "handler-started",
+                "payload": {
+                    "handlerStartedAt": int(time.time() * 1000),
+                    "context": {
+                        "invocationId": invocationId,
+                        "requestId": requestId,
+                    }
+                }
+            })
 
             token = storage.set({
                 "invocationId": invocationId,
@@ -268,28 +279,24 @@ if 'VERCEL_IPC_FD' in os.environ or 'VERCEL_IPC_PATH' in os.environ:
                             env[key] = wsgi_encoding_dance(value)
                     for k, v in self.headers.items():
                         env['HTTP_' + k.replace('-', '_').upper()] = v
-                    # Response body
-                    body = BytesIO()
 
                     def start_response(status, headers, exc_info=None):
                         self.send_response(int(status.split(' ')[0]))
                         for name, value in headers:
                             self.send_header(name, value)
                         self.end_headers()
-                        return body.write
+                        return self.wfile.write
 
                     # Call the application
                     response = app(env, start_response)
                     try:
                         for data in response:
                             if data:
-                                body.write(data)
+                                self.wfile.write(data)
+                                self.wfile.flush()
                     finally:
                         if hasattr(response, 'close'):
                             response.close()
-                    body = body.getvalue()
-                    self.wfile.write(body)
-                    self.wfile.flush()
         else:
             from urllib.parse import urlparse
             from io import BytesIO
