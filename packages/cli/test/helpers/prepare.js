@@ -367,6 +367,9 @@ module.exports = async function prepare(session, binaryPath, tmpFixturesDir) {
         },
       }),
     },
+    'project-vercel-auth': {
+      'index.txt': 'I Am a Website!',
+    },
     'project-link-deploy': {
       'package.json': '{}',
     },
@@ -601,11 +604,6 @@ module.exports = async function prepare(session, binaryPath, tmpFixturesDir) {
           build: 'echo "Hello, World!" >> index.txt',
         },
       }),
-    },
-    'runtime-logs': {
-      'api/greetings.js':
-        'module.exports = (_, res) => {console.log("hi!"); res.json({ message: "Hello, World!" })}',
-      'index.txt': 'Hello, World!',
     },
   };
 

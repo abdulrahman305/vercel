@@ -1,5 +1,59 @@
 # @vercel/python
 
+## 5.0.0
+
+### Major Changes
+
+- By default, the Python builder excludes certain directories from the zip output. ([#13609](https://github.com/vercel/vercel/pull/13609))
+  In vercel.json it's also possible to specify a custom `excludeFiles` rule.
+  Previously `excludeFiles` would replace the default exclusions entirely. Now the
+  default exclusions will always apply. The default exclusions consist of:
+
+  - .git
+  - .vercel
+  - .pnpm-store
+  - node_modules (also excluded when nested)
+  - .next
+  - .nuxt
+
+## 4.8.0
+
+### Minor Changes
+
+- Improve Fluid support ([#13589](https://github.com/vercel/vercel/pull/13589))
+
+## 4.7.4
+
+### Patch Changes
+
+- Ignore .pnpm_store in Python lambdas ([#13568](https://github.com/vercel/vercel/pull/13568))
+
+## 4.7.3
+
+### Patch Changes
+
+- Reverting support for `preferredRegion` ([#13566](https://github.com/vercel/vercel/pull/13566))
+
+## 4.7.2
+
+### Patch Changes
+
+- Fix bug in WSGI streaming ([#13213](https://github.com/vercel/vercel/pull/13213))
+
+## 4.7.1
+
+### Patch Changes
+
+- Remove support for VERCEL_IPC_FD ([#12908](https://github.com/vercel/vercel/pull/12908))
+
+- Add `supportsResponseStreaming` to build output ([#12884](https://github.com/vercel/vercel/pull/12884))
+
+## 4.7.0
+
+### Minor Changes
+
+- Add support for in-function concurrency ([#12850](https://github.com/vercel/vercel/pull/12850))
+
 ## 4.6.0
 
 ### Minor Changes

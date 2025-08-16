@@ -7,6 +7,12 @@ const {
   createRunBuildLambda,
 } = require('../../../../test/lib/run-build-lambda');
 
+/**
+ * @type {(inputPath: string) => Promise<{
+ *  buildResult: import('@vercel/build-utils').BuildResultV2Typical,
+ *  workPath: string
+ * }>}
+ */
 const runBuildLambda = createRunBuildLambda(builder);
 
 jest.setTimeout(360000);
@@ -416,7 +422,7 @@ it('should handle edge functions in app with basePath', async () => {
   expect(output['test/test.rsc'].type).toBe('EdgeFunction');
 
   expect(output['test/_not-found']).toBeDefined();
-  expect(output['test/_not-found'].type).toBe('Lambda');
+  expect(output['test/_not-found'].type).toBe('Prerender');
 
   const lambdas = new Set();
   const edgeFunctions = new Set();
@@ -428,7 +434,7 @@ it('should handle edge functions in app with basePath', async () => {
       edgeFunctions.add(item);
     }
   }
-  expect(lambdas.size).toBe(1);
+  expect(lambdas.size).toBe(0);
   expect(edgeFunctions.size).toBe(4);
 });
 
@@ -443,7 +449,7 @@ it('should not generate lambdas that conflict with static index route in app wit
   expect(output['test/index.rsc'].type).toBe('Prerender');
 
   expect(output['test/_not-found']).toBeDefined();
-  expect(output['test/_not-found'].type).toBe('Lambda');
+  expect(output['test/_not-found'].type).toBe('Prerender');
 
   const lambdas = new Set();
 
@@ -452,7 +458,7 @@ it('should not generate lambdas that conflict with static index route in app wit
       lambdas.add(item);
     }
   }
-  expect(lambdas.size).toBe(1);
+  expect(lambdas.size).toBe(0);
 });
 
 describe('PPR', () => {
@@ -538,7 +544,7 @@ describe('PPR', () => {
       }
     }
 
-    expect(lambdas.size).toBe(2);
+    expect(lambdas.size).toBe(1);
 
     expect(output['index']).toBeDefined();
     expect(output['index'].type).toBe('Prerender');
@@ -558,7 +564,7 @@ describe('PPR', () => {
       }
     }
 
-    expect(lambdas.size).toBe(2);
+    expect(lambdas.size).toBe(1);
 
     // Validate that these two lambdas are the same.
     expect(output['chat/index']).toBeDefined();
@@ -591,5 +597,120 @@ describe('PPR', () => {
       // cache posioning.
       expect(output['[lang]'].fallback).toEqual(null);
     });
+  });
+});
+
+describe('rewrite headers', () => {
+  let routes;
+  beforeAll(async () => {
+    const output = await runBuildLambda(
+      path.join(__dirname, 'rewrite-headers')
+    );
+    routes = output.buildResult.routes;
+  });
+
+  it('should add rewrite headers to the original rewrite', () => {
+    let route = routes.filter(r => r.src?.includes('/hello/sam'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/hello/samantha',
+      'x-nextjs-rewritten-query': undefined,
+    });
+  });
+
+  it('should add rewrite query headers', () => {
+    let route = routes.filter(r => r.src?.includes('/hello/fred'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/other',
+      'x-nextjs-rewritten-query': 'key=value',
+    });
+  });
+
+  it('should not add external rewrite headers', () => {
+    const route = routes.filter(r => r.src?.includes('google'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toBeUndefined();
+  });
+
+  it('should strip the hash from the rewritten path', () => {
+    const route = routes.filter(r => r.src?.includes('suffix'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/$1',
+      'x-nextjs-rewritten-query': 'suffix=$1',
+    });
+  });
+});
+
+describe('rewrite headers with rewrite', () => {
+  let routes;
+  beforeAll(async () => {
+    const output = await runBuildLambda(
+      path.join(__dirname, 'rewrite-headers-with-rewrite')
+    );
+    routes = output.buildResult.routes;
+  });
+
+  it('should add rewrite headers to the original rewrite', () => {
+    let route = routes.filter(
+      r => r.src === '^(?:/(en|fi|sv|fr|nb))(?:/)?(?<rscsuff>\\.rsc)?$'
+    );
+    expect(route.length).toBe(1);
+
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/$1/landing',
+      'x-nextjs-rewritten-query': undefined,
+    });
+  });
+});
+
+describe('cache-control', () => {
+  /**
+   * @type {import('@vercel/build-utils').BuildResultV2Typical}
+   */
+  let buildResult;
+
+  beforeAll(async () => {
+    const result = await runBuildLambda(path.join(__dirname, 'use-cache'));
+    buildResult = result.buildResult;
+  });
+
+  it('should add expiration and staleExpiration values for ISR routes with "use cache"', async () => {
+    const { output } = buildResult;
+    const outputEntry = output['index'];
+
+    if (outputEntry.type !== 'Prerender') {
+      throw new Error('Unexpected output type ' + outputEntry.type);
+    }
+
+    // cache life profile "weeks"
+    expect(outputEntry.expiration).toBe(604800); // 1 week
+    expect(outputEntry.staleExpiration).toBe(2592000); // 30 days
+  });
+
+  it('should add expiration and staleExpiration values for PPR fallback routes with "use cache"', async () => {
+    const { output } = buildResult;
+    const outputEntry = output['[slug]'];
+
+    if (outputEntry.type !== 'Prerender') {
+      throw new Error('Unexpected output type ' + outputEntry.type);
+    }
+
+    // cache life profile "weeks"
+    expect(outputEntry.expiration).toBe(604800); // 1 week
+    expect(outputEntry.staleExpiration).toBe(2592000); // 30 days
+  });
+
+  it('should not add a staleExpiration value for static routes', async () => {
+    const { output } = buildResult;
+    const outputEntry = output['static'];
+
+    if (outputEntry.type !== 'Prerender') {
+      throw new Error('Unexpected output type ' + outputEntry.type);
+    }
+
+    expect(outputEntry.expiration).toBe(false);
+    expect(outputEntry.staleExpiration).toBeUndefined();
   });
 });

@@ -15,7 +15,7 @@ import {
 import createProject from '../projects/create-project';
 import type Client from '../client';
 import { printError } from '../error';
-import confirm from '../input/confirm';
+
 import toHumanPath from '../humanize-path';
 import { isDirectory } from '../config/global-path';
 import selectOrg from '../input/select-org';
@@ -32,6 +32,11 @@ import output from '../../output-manager';
 import { detectProjects } from '../projects/detect-projects';
 import readConfig from '../config/read-config';
 import { frameworkList } from '@vercel/frameworks';
+import {
+  vercelAuth,
+  type VercelAuthSetting,
+  DEFAULT_VERCEL_AUTH_SETTING,
+} from '../input/vercel-auth';
 
 export interface SetupAndLinkOptions {
   autoConfirm?: boolean;
@@ -84,8 +89,7 @@ export default async function setupAndLink(
 
   const shouldStartSetup =
     autoConfirm ||
-    (await confirm(
-      client,
+    (await client.input.confirm(
       `${setupMsg} ${chalk.cyan(`“${toHumanPath(path)}”`)}?`,
       true
     ));
@@ -198,6 +202,22 @@ export default async function setupAndLink(
       );
     }
 
+    // Support for changing additional, less frequently used project settings.
+    let changeAdditionalSettings = false;
+    if (!autoConfirm) {
+      changeAdditionalSettings = await client.input.confirm(
+        'Do you want to change additional project settings?',
+        false
+      );
+    }
+
+    let vercelAuthSetting: VercelAuthSetting = DEFAULT_VERCEL_AUTH_SETTING;
+    if (changeAdditionalSettings) {
+      vercelAuthSetting = await vercelAuth(client, {
+        autoConfirm,
+      });
+    }
+
     if (rootDirectory) {
       settings.rootDirectory = rootDirectory;
     }
@@ -205,6 +225,7 @@ export default async function setupAndLink(
     const project = await createProject(client, {
       ...settings,
       name: newProjectName,
+      vercelAuth: vercelAuthSetting,
     });
 
     await linkFolderToProject(

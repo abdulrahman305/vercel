@@ -4,7 +4,6 @@ import { getCommandName } from '../../util/pkg-name';
 import getProjectByDeployment from '../../util/projects/get-project-by-deployment';
 import ms from 'ms';
 import promoteStatus from './status';
-import confirm from '../../util/input/confirm';
 import output from '../../output-manager';
 
 interface DeploymentCreateResponsePartial {
@@ -41,7 +40,7 @@ export default async function requestPromote({
     } else {
       const question =
         'This deployment is not a production deployment and cannot be directly promoted. A new deployment will be built using your production environment. Are you sure you want to continue?';
-      promoteByCreation = await confirm(client, question, false);
+      promoteByCreation = await client.input.confirm(question, false);
       if (!promoteByCreation) {
         output.error('Canceled');
         return 0;
@@ -71,11 +70,20 @@ export default async function requestPromote({
     );
     return 0;
   }
-  await client.fetch(`/v10/projects/${project.id}/promote/${deployment.id}`, {
-    body: {}, // required
-    json: false,
-    method: 'POST',
-  });
+  const res = await client.fetch(
+    `/v10/projects/${project.id}/promote/${deployment.id}`,
+    {
+      body: {}, // required
+      json: false,
+      method: 'POST',
+    }
+  );
+  if (res.status === 202) {
+    output.log(
+      'Promotion has been queued and will begin when the active rolling release completes successfully.'
+    );
+    return 0;
+  }
 
   if (timeout !== undefined && ms(timeout) === 0) {
     output.log(
