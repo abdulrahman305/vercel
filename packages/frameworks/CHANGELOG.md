@@ -1,5 +1,122 @@
 # @vercel/frameworks
 
+## 3.8.0
+
+### Minor Changes
+
+- Add xmcp zero-config Framework Preset ([#13770](https://github.com/vercel/vercel/pull/13770))
+
+## 3.7.7
+
+### Patch Changes
+
+- Add Express to frameworks detection ([#13754](https://github.com/vercel/vercel/pull/13754))
+
+## 3.7.6
+
+### Patch Changes
+
+- Fix issue where .mjs files weren't transpiled properly for Hono ([#13658](https://github.com/vercel/vercel/pull/13658))
+
+## 3.7.5
+
+### Patch Changes
+
+- Support `server.ts` for hono entrypoint ([#13638](https://github.com/vercel/vercel/pull/13638))
+
+## 3.7.4
+
+### Patch Changes
+
+- Adds framework detection and an associated builder for Hono. ([#13594](https://github.com/vercel/vercel/pull/13594))
+
+## 3.7.3
+
+### Patch Changes
+
+- No longer inject 404 route for react router ([#13571](https://github.com/vercel/vercel/pull/13571))
+
+## 3.7.2
+
+### Patch Changes
+
+- Reverting support for `preferredRegion` ([#13566](https://github.com/vercel/vercel/pull/13566))
+
+## 3.7.1
+
+### Patch Changes
+
+- [frameworks] use correct output dir for nitro ([#13541](https://github.com/vercel/vercel/pull/13541))
+
+## 3.7.0
+
+### Minor Changes
+
+- Add Nitro to framework list ([#13472](https://github.com/vercel/vercel/pull/13472))
+
+## 3.6.4
+
+### Patch Changes
+
+- [frameworks] updated Docusaurus to match out framework naming standards ([#13333](https://github.com/vercel/vercel/pull/13333))
+
+## 3.6.3
+
+### Patch Changes
+
+- Rename SvelteKit (v1) ([#13255](https://github.com/vercel/vercel/pull/13255))
+
+## 3.6.2
+
+### Patch Changes
+
+- Replace Ember Mascot with Ember Framework Logo ([#13109](https://github.com/vercel/vercel/pull/13109))
+
+- Updates the [Astro](https://astro.build) logo ([#13112](https://github.com/vercel/vercel/pull/13112))
+
+## 3.6.1
+
+### Patch Changes
+
+- Enable "demo" property for "react-router" framework ([#13008](https://github.com/vercel/vercel/pull/13008))
+
+## 3.6.0
+
+### Minor Changes
+
+- Add "react-router" framework entry ([#12932](https://github.com/vercel/vercel/pull/12932))
+
+## 3.5.0
+
+### Minor Changes
+
+- Make vite detection supersede ionic-react ([#12880](https://github.com/vercel/vercel/pull/12880))
+
+## 3.4.0
+
+### Minor Changes
+
+- [frameworks] pass `$PORT` to dev command for newer svelte apps ([#12696](https://github.com/vercel/vercel/pull/12696))
+
+## 3.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`79fbf1c95f4fa9bfe6af17aa3e13cf18424fc521`](https://github.com/vercel/vercel/commit/79fbf1c95f4fa9bfe6af17aa3e13cf18424fc521)]:
+  - @vercel/error-utils@2.0.3
+
+## 3.3.0
+
+### Minor Changes
+
+- [frameworks] Make FastHTML detector more specific ([#12065](https://github.com/vercel/vercel/pull/12065))
+
+## 3.2.0
+
+### Minor Changes
+
+- [fs-detectors] Adds new detector for Sanity v3 ([#11991](https://github.com/vercel/vercel/pull/11991))
+
 ## 3.1.1
 
 ### Patch Changes

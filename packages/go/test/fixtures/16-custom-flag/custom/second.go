@@ -1,4 +1,3 @@
-//go:build second
 // +build second
 
 package custom

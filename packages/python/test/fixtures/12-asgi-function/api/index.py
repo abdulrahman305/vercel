@@ -8,5 +8,8 @@ async def app(scope, receive, send):
         }
     )
     await send(
-        {"type": "http.response.body", "body": b"asgi-function:RANDOMNESS_PLACEHOLDER"}
+        {
+            "type": "http.response.body",
+            "body": b"asgi-function:RANDOMNESS_PLACEHOLDER"
+        }
     )

@@ -1,8 +1,8 @@
 import { join } from 'path';
 import { outputJSON, readFile } from 'fs-extra';
-import { VercelConfig } from '@vercel/client';
+import type { VercelConfig } from '@vercel/client';
 import { VERCEL_DIR, VERCEL_DIR_PROJECT } from './link';
-import { PartialProjectSettings } from '../input/edit-project-settings';
+import type { PartialProjectSettings } from '../input/edit-project-settings';
 import type { Org, Project, ProjectLink } from '@vercel-internals/types';
 import { isErrnoException, isError } from '@vercel/error-utils';
 
@@ -43,6 +43,7 @@ export async function writeProjectSettings(
   const projectLinkAndSettings: ProjectLinkAndSettings = {
     projectId: isRepoLinked ? undefined : project.id,
     orgId: isRepoLinked ? undefined : org.id,
+    projectName: isRepoLinked ? undefined : project.name,
     settings: {
       createdAt: project.createdAt,
       framework: project.framework,

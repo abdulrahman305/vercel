@@ -6,14 +6,14 @@ const builder = require('../../');
 const {
   createRunBuildLambda,
 } = require('../../../../test/lib/run-build-lambda');
-const { normalizeReactVersion } = require('../utils');
 
-const runBuildLambda = async projectPath => {
-  const innerRunBuildLambda = createRunBuildLambda(builder);
-
-  await normalizeReactVersion(projectPath);
-  return innerRunBuildLambda(projectPath);
-};
+/**
+ * @type {(inputPath: string) => Promise<{
+ *  buildResult: import('@vercel/build-utils').BuildResultV2Typical,
+ *  workPath: string
+ * }>}
+ */
+const runBuildLambda = createRunBuildLambda(builder);
 
 jest.setTimeout(360000);
 
@@ -422,7 +422,7 @@ it('should handle edge functions in app with basePath', async () => {
   expect(output['test/test.rsc'].type).toBe('EdgeFunction');
 
   expect(output['test/_not-found']).toBeDefined();
-  expect(output['test/_not-found'].type).toBe('Lambda');
+  expect(output['test/_not-found'].type).toBe('Prerender');
 
   const lambdas = new Set();
   const edgeFunctions = new Set();
@@ -434,7 +434,7 @@ it('should handle edge functions in app with basePath', async () => {
       edgeFunctions.add(item);
     }
   }
-  expect(lambdas.size).toBe(1);
+  expect(lambdas.size).toBe(0);
   expect(edgeFunctions.size).toBe(4);
 });
 
@@ -449,7 +449,7 @@ it('should not generate lambdas that conflict with static index route in app wit
   expect(output['test/index.rsc'].type).toBe('Prerender');
 
   expect(output['test/_not-found']).toBeDefined();
-  expect(output['test/_not-found'].type).toBe('Lambda');
+  expect(output['test/_not-found'].type).toBe('Prerender');
 
   const lambdas = new Set();
 
@@ -458,5 +458,259 @@ it('should not generate lambdas that conflict with static index route in app wit
       lambdas.add(item);
     }
   }
-  expect(lambdas.size).toBe(1);
+  expect(lambdas.size).toBe(0);
+});
+
+describe('PPR', () => {
+  describe('legacy', () => {
+    it('should have the same lambda for revalidation and resume', async () => {
+      const {
+        buildResult: { output },
+      } = await runBuildLambda(path.join(__dirname, 'ppr-legacy'));
+
+      // Validate that there are only the two lambdas created.
+      const lambdas = new Set();
+      for (const key of Object.keys(output)) {
+        if (output[key].type === 'Lambda') {
+          lambdas.add(output[key]);
+        }
+      }
+
+      expect(lambdas.size).toBe(2);
+
+      // Validate that these two lambdas are the same.
+      expect(output['index']).toBeDefined();
+      expect(output['index'].type).toBe('Prerender');
+      expect(output['index'].lambda).toBeDefined();
+      expect(output['index'].lambda.type).toBe('Lambda');
+
+      expect(output['_next/postponed/resume/index']).toBeDefined();
+      expect(output['_next/postponed/resume/index'].type).toBe('Lambda');
+
+      expect(output['index'].lambda).toBe(
+        output['_next/postponed/resume/index']
+      );
+    });
+
+    it('should support basePath', async () => {
+      const {
+        buildResult: { output },
+      } = await runBuildLambda(path.join(__dirname, 'ppr-legacy-basepath'));
+
+      // Validate that there are only the two lambdas created.
+      const lambdas = new Set();
+      for (const key of Object.keys(output)) {
+        if (output[key].type === 'Lambda') {
+          lambdas.add(output[key]);
+        }
+      }
+
+      expect(lambdas.size).toBe(2);
+
+      // Validate that these two lambdas are the same.
+      expect(output['chat/index']).toBeDefined();
+      expect(output['chat/index'].type).toBe('Prerender');
+      expect(output['chat/index'].lambda).toBeDefined();
+      expect(output['chat/index'].lambda.type).toBe('Lambda');
+
+      expect(output['chat/_next/postponed/resume/index']).toBeDefined();
+      expect(output['chat/_next/postponed/resume/index'].type).toBe('Lambda');
+
+      expect(output['chat/index'].lambda).toBe(
+        output['chat/_next/postponed/resume/index']
+      );
+      expect(output['chat/index'].experimentalStreamingLambdaPath).toBe(
+        'chat/_next/postponed/resume/index'
+      );
+      expect(output['chat/index'].chain?.outputPath).toBe(
+        'chat/_next/postponed/resume/index'
+      );
+      expect(output['chat/index'].chain?.headers).toEqual({
+        'x-matched-path': '_next/postponed/resume/index',
+      });
+    });
+  });
+
+  it('should have the chain added', async () => {
+    const {
+      buildResult: { output },
+    } = await runBuildLambda(path.join(__dirname, 'ppr'));
+
+    // Validate that there are only the two lambdas created.
+    const lambdas = new Set();
+    for (const key of Object.keys(output)) {
+      if (output[key].type === 'Lambda') {
+        lambdas.add(output[key]);
+      }
+    }
+
+    expect(lambdas.size).toBe(1);
+
+    expect(output['index']).toBeDefined();
+    expect(output['index'].type).toBe('Prerender');
+    expect(output['index'].chain?.outputPath).toBe('index');
+  });
+
+  it('should support basePath', async () => {
+    const {
+      buildResult: { output },
+    } = await runBuildLambda(path.join(__dirname, 'ppr-basepath'));
+
+    // Validate that there are only the two lambdas created.
+    const lambdas = new Set();
+    for (const key of Object.keys(output)) {
+      if (output[key].type === 'Lambda') {
+        lambdas.add(output[key]);
+      }
+    }
+
+    expect(lambdas.size).toBe(1);
+
+    // Validate that these two lambdas are the same.
+    expect(output['chat/index']).toBeDefined();
+    expect(output['chat/index'].type).toBe('Prerender');
+    expect(output['chat/index'].lambda).toBeDefined();
+    expect(output['chat/index'].lambda.type).toBe('Lambda');
+
+    expect(output['chat/index'].chain?.outputPath).toBe('chat/index');
+    expect(output['chat/index'].chain?.headers).toEqual({
+      'next-resume': '1',
+    });
+  });
+
+  describe('root params', () => {
+    it('should not generate a prerender for the missing root params route', async () => {
+      const {
+        buildResult: { output },
+      } = await runBuildLambda(path.join(__dirname, 'ppr-root-params'));
+
+      expect(output['[lang]']).toBeDefined();
+      expect(output['[lang]'].type).toBe('Prerender');
+
+      // We want this to be a chainable prerender (supports Partial
+      // Prerendering).
+      expect(output['[lang]'].chain).toBeDefined();
+
+      // TODO: once we support revalidating this page, we should remove this
+      // We don't want to generate a fallback for this route. If this case fails
+      // it indicates that the fallback was generated, and we're at risk of
+      // cache posioning.
+      expect(output['[lang]'].fallback).toEqual(null);
+    });
+  });
+});
+
+describe('rewrite headers', () => {
+  let routes;
+  beforeAll(async () => {
+    const output = await runBuildLambda(
+      path.join(__dirname, 'rewrite-headers')
+    );
+    routes = output.buildResult.routes;
+  });
+
+  it('should add rewrite headers to the original rewrite', () => {
+    let route = routes.filter(r => r.src?.includes('/hello/sam'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/hello/samantha',
+      'x-nextjs-rewritten-query': undefined,
+    });
+  });
+
+  it('should add rewrite query headers', () => {
+    let route = routes.filter(r => r.src?.includes('/hello/fred'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/other',
+      'x-nextjs-rewritten-query': 'key=value',
+    });
+  });
+
+  it('should not add external rewrite headers', () => {
+    const route = routes.filter(r => r.src?.includes('google'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toBeUndefined();
+  });
+
+  it('should strip the hash from the rewritten path', () => {
+    const route = routes.filter(r => r.src?.includes('suffix'));
+    expect(route.length).toBe(1);
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/$1',
+      'x-nextjs-rewritten-query': 'suffix=$1',
+    });
+  });
+});
+
+describe('rewrite headers with rewrite', () => {
+  let routes;
+  beforeAll(async () => {
+    const output = await runBuildLambda(
+      path.join(__dirname, 'rewrite-headers-with-rewrite')
+    );
+    routes = output.buildResult.routes;
+  });
+
+  it('should add rewrite headers to the original rewrite', () => {
+    let route = routes.filter(
+      r => r.src === '^(?:/(en|fi|sv|fr|nb))(?:/)?(?<rscsuff>\\.rsc)?$'
+    );
+    expect(route.length).toBe(1);
+
+    expect(route[0].headers).toEqual({
+      'x-nextjs-rewritten-path': '/$1/landing',
+      'x-nextjs-rewritten-query': undefined,
+    });
+  });
+});
+
+describe('cache-control', () => {
+  /**
+   * @type {import('@vercel/build-utils').BuildResultV2Typical}
+   */
+  let buildResult;
+
+  beforeAll(async () => {
+    const result = await runBuildLambda(path.join(__dirname, 'use-cache'));
+    buildResult = result.buildResult;
+  });
+
+  it('should add expiration and staleExpiration values for ISR routes with "use cache"', async () => {
+    const { output } = buildResult;
+    const outputEntry = output['index'];
+
+    if (outputEntry.type !== 'Prerender') {
+      throw new Error('Unexpected output type ' + outputEntry.type);
+    }
+
+    // cache life profile "weeks"
+    expect(outputEntry.expiration).toBe(604800); // 1 week
+    expect(outputEntry.staleExpiration).toBe(2592000); // 30 days
+  });
+
+  it('should add expiration and staleExpiration values for PPR fallback routes with "use cache"', async () => {
+    const { output } = buildResult;
+    const outputEntry = output['[slug]'];
+
+    if (outputEntry.type !== 'Prerender') {
+      throw new Error('Unexpected output type ' + outputEntry.type);
+    }
+
+    // cache life profile "weeks"
+    expect(outputEntry.expiration).toBe(604800); // 1 week
+    expect(outputEntry.staleExpiration).toBe(2592000); // 30 days
+  });
+
+  it('should not add a staleExpiration value for static routes', async () => {
+    const { output } = buildResult;
+    const outputEntry = output['static'];
+
+    if (outputEntry.type !== 'Prerender') {
+      throw new Error('Unexpected output type ' + outputEntry.type);
+    }
+
+    expect(outputEntry.expiration).toBe(false);
+    expect(outputEntry.staleExpiration).toBeUndefined();
+  });
 });

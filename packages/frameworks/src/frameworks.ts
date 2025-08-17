@@ -239,6 +239,59 @@ export const frameworks = [
     getOutputDirName: async () => 'public',
   },
   {
+    name: 'React Router',
+    slug: 'react-router',
+    demo: 'https://react-router-v7-template.vercel.app',
+    logo: 'https://api-frameworks.vercel.sh/framework-logos/react-router.svg',
+    darkModeLogo:
+      'https://api-frameworks.vercel.sh/framework-logos/react-router-dark.svg',
+    tagline: 'Declarative routing for React',
+    description:
+      'A user-obsessed, standards-focused, multi-strategy router you can deploy anywhere.',
+    website: 'https://reactrouter.com',
+    sort: 7,
+    supersedes: ['hydrogen', 'vite'],
+    useRuntime: { src: 'package.json', use: '@vercel/remix-builder' },
+    ignoreRuntimes: ['@vercel/node'],
+    detectors: {
+      some: [
+        {
+          path: 'vite.config.js',
+          matchContent: '@react-router/dev/vite',
+        },
+        {
+          path: 'vite.config.ts',
+          matchContent: '@react-router/dev/vite',
+        },
+        {
+          path: 'react-router.config.js',
+        },
+        {
+          path: 'react-router.config.ts',
+        },
+      ],
+    },
+    settings: {
+      installCommand: {
+        placeholder:
+          '`yarn install`, `pnpm install`, `npm install`, or `bun install`',
+      },
+      buildCommand: {
+        value: 'react-router build',
+        placeholder: '`npm run build` or `react-router build`',
+      },
+      devCommand: {
+        value: 'react-router dev',
+        placeholder: 'react-router dev',
+      },
+      outputDirectory: {
+        value: 'build',
+      },
+    },
+    dependency: 'react-router',
+    getOutputDirName: async () => 'build',
+  },
+  {
     name: 'Astro',
     slug: 'astro',
     demo: 'https://astro-template.vercel.app',
@@ -363,7 +416,7 @@ export const frameworks = [
     cachePattern: '.cache/**',
   },
   {
-    name: 'Docusaurus (v2)',
+    name: 'Docusaurus (v2+)',
     slug: 'docusaurus-2',
     demo: 'https://docusaurus-2-template.vercel.app',
     logo: 'https://api-frameworks.vercel.sh/framework-logos/docusaurus.svg',
@@ -1076,7 +1129,7 @@ export const frameworks = [
     getOutputDirName: async () => 'public',
   },
   {
-    name: 'SvelteKit (v1)',
+    name: 'SvelteKit',
     slug: 'sveltekit-1',
     demo: 'https://sveltekit-1-template.vercel.app',
     logo: 'https://api-frameworks.vercel.sh/framework-logos/svelte.svg',
@@ -1106,7 +1159,7 @@ export const frameworks = [
       },
       devCommand: {
         placeholder: 'vite dev',
-        value: 'vite dev',
+        value: 'vite dev --port $PORT',
       },
       outputDirectory: {
         value: 'public',
@@ -1358,7 +1411,6 @@ export const frameworks = [
   {
     name: 'Saber',
     slug: 'saber',
-    demo: 'https://saber-template.vercel.app',
     logo: 'https://api-frameworks.vercel.sh/framework-logos/saber.svg',
     tagline:
       'Saber is a framework for building static sites in Vue.js that supports data from any source.',
@@ -1478,6 +1530,7 @@ export const frameworks = [
     website: 'https://nuxtjs.org',
     sort: 2,
     envPrefix: 'NUXT_ENV_',
+    supersedes: ['nitro'],
     detectors: {
       some: [
         {
@@ -1820,6 +1873,7 @@ export const frameworks = [
       'Vite is a new breed of frontend build tool that significantly improves the frontend development experience.',
     description: 'A Vue.js app, created with Vite.',
     website: 'https://vitejs.dev',
+    supersedes: ['ionic-react'],
     envPrefix: 'VITE_',
     detectors: {
       every: [
@@ -1975,7 +2029,8 @@ export const frameworks = [
     detectors: {
       every: [
         {
-          path: 'main.py',
+          path: 'requirements.txt',
+          matchContent: 'python-fasthtml',
         },
       ],
     },
@@ -2002,6 +2057,68 @@ export const frameworks = [
       {
         src: '/(.*)',
         dest: '/main',
+      },
+    ],
+  },
+  {
+    name: 'Sanity (v3)',
+    slug: 'sanity-v3',
+    demo: 'https://sanity-studio-template.vercel.app',
+    logo: 'https://api-frameworks.vercel.sh/framework-logos/sanity.svg',
+    tagline: 'The structured content platform.',
+    description: 'A Sanity Studio',
+    website: 'https://www.sanity.io',
+    envPrefix: 'SANITY_STUDIO_',
+    detectors: {
+      some: [
+        {
+          path: 'sanity.json',
+        },
+        {
+          path: 'sanity.config.js',
+        },
+        {
+          path: 'sanity.config.jsx',
+        },
+        {
+          path: 'sanity.config.ts',
+        },
+        {
+          path: 'sanity.config.tsx',
+        },
+      ],
+      every: [
+        {
+          path: 'package.json',
+          matchContent:
+            '"(dev)?(d|D)ependencies":\\s*{[^}]*"sanity":\\s*"\\^?3\\..*"[^}]*}',
+        },
+      ],
+    },
+    settings: {
+      installCommand: {
+        placeholder:
+          '`yarn install`, `pnpm install`, `npm install`, or `bun install`',
+      },
+      buildCommand: {
+        placeholder: '`npm run build` or `sanity build`',
+        value: 'sanity build',
+      },
+      devCommand: {
+        value: 'sanity dev --port $PORT',
+      },
+      outputDirectory: {
+        value: 'dist',
+      },
+    },
+    getOutputDirName: async () => 'dist',
+    defaultRoutes: [
+      {
+        handle: 'filesystem',
+      },
+      {
+        src: '/(.*)',
+        dest: '/index.html',
       },
     ],
   },
@@ -2095,6 +2212,316 @@ export const frameworks = [
       },
     },
     getOutputDirName: async () => 'storybook-static',
+  },
+  {
+    name: 'Nitro',
+    slug: 'nitro',
+    logo: 'https://api-frameworks.vercel.sh/framework-logos/nitro.svg',
+    demo: 'https://nitro-template.vercel.app',
+    tagline: 'Nitro is a next generation server toolkit.',
+    description:
+      'Nitro lets you create web servers that run on multiple platforms.',
+    website: 'https://nitro.build/',
+    detectors: {
+      every: [{ matchPackage: 'nitropack' }],
+    },
+    settings: {
+      installCommand: {
+        placeholder:
+          '`yarn install`, `pnpm install`, `npm install`, or `bun install`',
+      },
+      buildCommand: {
+        placeholder: '`npm run build` or `nitro build`',
+        value: 'nitro build',
+      },
+      devCommand: {
+        value: 'nitro dev',
+      },
+      outputDirectory: {
+        value: 'dist',
+      },
+    },
+    dependency: 'nitropack',
+    getOutputDirName: async () => 'public',
+  },
+  {
+    name: 'Hono',
+    slug: 'hono',
+    logo: 'https://api-frameworks.vercel.sh/framework-logos/hono.svg',
+    demo: 'https://hono.vercel.dev',
+    tagline: 'Web framework built on Web Standards',
+    description:
+      'Fast, lightweight, built on Web Standards. Support for any JavaScript runtime.',
+    website: 'https://hono.dev',
+    useRuntime: { src: 'index.js', use: '@vercel/hono' },
+    defaultRoutes: [
+      {
+        handle: 'filesystem',
+      },
+      {
+        src: '/(.*)',
+        dest: '/',
+      },
+    ],
+    detectors: {
+      every: [{ matchPackage: 'hono' }],
+      some: [
+        {
+          path: 'index.cjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.js',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.mjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.mts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.ts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.cjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.js',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.mjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.mts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.ts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.cjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.js',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.mjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.mts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.ts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']hono["\']\\s*(?:\\))?',
+        },
+      ],
+    },
+    settings: {
+      installCommand: {
+        placeholder:
+          '`yarn install`, `pnpm install`, `npm install`, or `bun install`',
+      },
+      buildCommand: {
+        placeholder: 'None',
+        value: null,
+      },
+      devCommand: {
+        placeholder: 'None',
+        value: null,
+      },
+      outputDirectory: {
+        value: 'N/A',
+      },
+    },
+    dependency: 'hono',
+    getOutputDirName: async () => 'public',
+  },
+  {
+    name: 'Express',
+    slug: 'express',
+    logo: 'https://api-frameworks.vercel.sh/framework-logos/express.svg',
+    darkModeLogo:
+      'https://api-frameworks.vercel.sh/framework-logos/express-dark.svg',
+    tagline: 'Fast, unopinionated, minimalist web framework for Node.js',
+    description: 'Fast, unopinionated, minimalist web framework for Node.js',
+    website: 'https://expressjs.com',
+    useRuntime: { src: 'index.js', use: '@vercel/express' },
+    defaultRoutes: [
+      {
+        handle: 'filesystem',
+      },
+      {
+        src: '/(.*)',
+        dest: '/',
+      },
+    ],
+    detectors: {
+      every: [{ matchPackage: 'express' }],
+      some: [
+        {
+          path: 'index.cjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.js',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.mjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.mts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'index.ts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.cjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.js',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.mjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.mts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'server.ts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.cjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.js',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.mjs',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.mts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+        {
+          path: 'src/index.ts',
+          matchContent:
+            '(?:from|require|import)\\s*(?:\\(\\s*)?["\']express["\']\\s*(?:\\))?',
+        },
+      ],
+    },
+    settings: {
+      installCommand: {
+        placeholder:
+          '`yarn install`, `pnpm install`, `npm install`, or `bun install`',
+      },
+      buildCommand: {
+        placeholder: 'None',
+        value: null,
+      },
+      devCommand: {
+        placeholder: 'None',
+        value: null,
+      },
+      outputDirectory: {
+        value: 'N/A',
+      },
+    },
+    dependency: 'express',
+    getOutputDirName: async () => 'public',
+  },
+  {
+    name: 'xmcp',
+    slug: 'xmcp',
+    logo: 'https://api-frameworks.vercel.sh/framework-logos/xmcp.svg',
+    tagline: 'The MCP framework for building AI-powered tools',
+    description:
+      'A framework for building Model Context Protocol servers with zero configuration.',
+    website: 'https://xmcp.dev',
+    detectors: {
+      some: [
+        {
+          path: 'xmcp.config.ts',
+        },
+        {
+          path: 'xmcp.config.js',
+        },
+        {
+          matchPackage: 'xmcp',
+        },
+      ],
+    },
+    settings: {
+      installCommand: {
+        placeholder:
+          '`yarn install`, `pnpm install`, `npm install`, or `bun install`',
+      },
+      buildCommand: {
+        placeholder: '`npm run build` or `xmcp build`',
+        value: 'xmcp build --vercel',
+      },
+      devCommand: {
+        value: 'xmcp dev',
+        placeholder: 'xmcp dev',
+      },
+      outputDirectory: {
+        value: 'dist',
+      },
+    },
+    dependency: 'xmcp',
+    getOutputDirName: async () => 'dist',
   },
   {
     name: 'Other',

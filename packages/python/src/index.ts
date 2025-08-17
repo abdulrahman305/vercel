@@ -194,12 +194,21 @@ export const build: BuildV3 = async ({
     .replace(/__VC_HANDLER_MODULE_NAME/g, moduleName)
     .replace(/__VC_HANDLER_ENTRYPOINT/g, entrypointWithSuffix);
 
+  const predefinedExcludes = [
+    '.git/**',
+    '.vercel/**',
+    '.pnpm-store/**',
+    '**/node_modules/**',
+    '**/.next/**',
+    '**/.nuxt/**',
+  ];
+
   const globOptions: GlobOptions = {
     cwd: workPath,
     ignore:
       config && typeof config.excludeFiles === 'string'
-        ? config.excludeFiles
-        : 'node_modules/**',
+        ? [...predefinedExcludes, config.excludeFiles]
+        : predefinedExcludes,
   };
 
   const files: Files = await glob('**', globOptions);
@@ -223,6 +232,7 @@ export const build: BuildV3 = async ({
     handler: `${handlerPyFilename}.vc_handler`,
     runtime: pythonVersion.runtime,
     environment: {},
+    supportsResponseStreaming: true,
   });
 
   return { output };

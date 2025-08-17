@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import { join } from 'path';
-import { Response } from 'node-fetch';
+import type { Response } from 'node-fetch';
 import {
   fetch,
   fixture,
@@ -166,15 +166,19 @@ test(
 
 test(
   '[vercel dev] Middleware that does basic rewrite',
-  testFixtureStdio('middleware-rewrite', async (testPath: any) => {
-    await testPath(200, '/', '<h1>Index</h1>');
-    await testPath(200, '/index', '<h1>Another</h1>');
-    await testPath(200, '/another', '<h1>Another</h1>');
-    await testPath(200, '/another.html', '<h1>Another</h1>');
-    await testPath(200, '/foo', '<h1>Another</h1>');
-    // different origin
-    await testPath(200, '?to=http://example.com', /Example Domain/);
-  })
+  testFixtureStdio(
+    'middleware-rewrite',
+    async (testPath: any) => {
+      await testPath(200, '/', '<h1>Index</h1>');
+      await testPath(200, '/index', '<h1>Another</h1>');
+      await testPath(200, '/another', '<h1>Another</h1>');
+      await testPath(200, '/another.html', '<h1>Another</h1>');
+      await testPath(200, '/foo', '<h1>Another</h1>');
+      // different origin
+      await testPath(200, '?to=http://example.com', /Example Domain/);
+    },
+    { skipDeploy: true }
+  )
 );
 
 test('[vercel dev] Middleware rewrites with same origin', async () => {
@@ -251,14 +255,22 @@ test(
 test(
   '[vercel dev] Middleware with error in function handler',
   testFixtureStdio('middleware-error-in-handler', async (testPath: any) => {
-    await testPath(500, '/', /EDGE_FUNCTION_INVOCATION_FAILED/);
+    await testPath(500, '/', /MIDDLEWARE_INVOCATION_FAILED/g);
   })
 );
 
 test(
   '[vercel dev] Middleware with error at init',
   testFixtureStdio('middleware-error-at-init', async (testPath: any) => {
-    await testPath(500, '/', /EDGE_FUNCTION_INVOCATION_FAILED/);
+    /*
+      These assertions check two possible options because a deployed test
+      of this scenario produces one result that the dev server can't currently
+      replicate.
+    */
+    const devCode = 'MIDDLEWARE_INVOCATION_FAILED';
+    const deploymentCode = 'INTERNAL_SERVER_ERROR';
+
+    await testPath(500, '/', new RegExp(`${devCode}|${deploymentCode}`, 'g'));
   })
 );
 

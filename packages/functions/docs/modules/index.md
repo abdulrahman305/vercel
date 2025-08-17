@@ -6,15 +6,79 @@
 
 - [Geo](../interfaces/index.Geo.md)
 - [Request](../interfaces/index.Request.md)
+- [RuntimeCache](../interfaces/index.RuntimeCache.md)
 
 ### Functions
 
+- [attachDatabasePool](index.md#attachdatabasepool)
+- [experimental_attachDatabasePool](index.md#experimental_attachdatabasepool)
 - [geolocation](index.md#geolocation)
+- [getCache](index.md#getcache)
 - [getEnv](index.md#getenv)
 - [ipAddress](index.md#ipaddress)
+- [next](index.md#next)
+- [rewrite](index.md#rewrite)
 - [waitUntil](index.md#waituntil)
 
 ## Functions
+
+### attachDatabasePool
+
+▸ **attachDatabasePool**(`dbPool`): `void`
+
+Call this function right after creating a database pool with the database pool object
+as argument.
+This ensures that the current function instance stays alive long enough for
+idle database connections to be removed from the pool.
+
+**`Example`**
+
+```ts
+const pgPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+attachDatabasePool(pgPool);
+```
+
+#### Parameters
+
+| Name     | Type     | Description                                                                                                                                                                                                                                                                                 |
+| :------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `dbPool` | `DbPool` | The database pool object. The supported pool types are: - PostgreSQL (pg) - MySQL2 - MariaDB - MongoDB - Redis (ioredis) - Cassandra (cassandra-driver) - OTHER: This method uses duck-typing to detect the pool type. Respectively you can pass in any object with a compatible interface. |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/functions/src/db-connections/index.ts:221](https://github.com/vercel/vercel/blob/main/packages/functions/src/db-connections/index.ts#L221)
+
+---
+
+### experimental_attachDatabasePool
+
+▸ **experimental_attachDatabasePool**(`dbPool`): `void`
+
+**`Deprecated`**
+
+Use attachDatabasePool instead.
+
+#### Parameters
+
+| Name     | Type     |
+| :------- | :------- |
+| `dbPool` | `DbPool` |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/functions/src/db-connections/index.ts:221](https://github.com/vercel/vercel/blob/main/packages/functions/src/db-connections/index.ts#L221)
+
+---
 
 ### geolocation
 
@@ -29,7 +93,7 @@ import { geolocation } from '@vercel/functions';
 
 export function GET(request) {
   const details = geolocation(request);
-  return Response.json(payload);
+  return Response.json(details);
 }
 ```
 
@@ -47,19 +111,55 @@ The location information of the request, in this way:
 
 ```json
 {
-  "city": "New York",
-  "country": "US",
-  "flag": "🇺🇸",
-  "countryRegion": "NY",
-  "region": "dev1",
-  "latitude": "40.7128",
-  "longitude": "-74.0060"
+ "city": "New York",
+ "country": "US",
+ "flag": "🇺🇸",
+ "countryRegion": "NY",
+ "region": "iad1",
+ "latitude": "40.7128",
+ "longitude": "-74.0060"
+ "postalCode": "10001"
 }
 ```
 
 #### Defined in
 
-[packages/functions/src/headers.ts:158](https://github.com/vercel/vercel/blob/main/packages/functions/src/headers.ts#L158)
+[packages/functions/src/headers.ts:180](https://github.com/vercel/vercel/blob/main/packages/functions/src/headers.ts#L180)
+
+---
+
+### getCache
+
+▸ **getCache**(`cacheOptions?`): [`RuntimeCache`](../interfaces/index.RuntimeCache.md)
+
+Retrieves the Vercel Runtime Cache.
+
+Keys are hashed to ensure they are unique and consistent. The hashing function can be overridden by providing a custom
+`keyHashFunction` in the `cacheOptions` parameter.
+
+To specify a namespace for the cache keys, you can pass a `namespace` option in the `cacheOptions` parameter. If
+a namespace is provided, the cache keys will be prefixed with the namespace followed by a separator (default is `$`). The
+namespaceSeparator can also be customized using the `namespaceSeparator` option.
+
+**`Throws`**
+
+If no cache is available in the context and `InMemoryCache` cannot be created.
+
+#### Parameters
+
+| Name            | Type           | Description                           |
+| :-------------- | :------------- | :------------------------------------ |
+| `cacheOptions?` | `CacheOptions` | Optional configuration for the cache. |
+
+#### Returns
+
+[`RuntimeCache`](../interfaces/index.RuntimeCache.md)
+
+An instance of the Vercel Runtime Cache.
+
+#### Defined in
+
+[packages/functions/src/cache/index.ts:33](https://github.com/vercel/vercel/blob/main/packages/functions/src/cache/index.ts#L33)
 
 ---
 
@@ -115,7 +215,7 @@ https://vercel.com/docs/projects/environment-variables/system-environment-variab
 
 ### ipAddress
 
-▸ **ipAddress**(`request`): `string` \| `undefined`
+▸ **ipAddress**(`input`): `string` \| `undefined`
 
 Returns the IP address of the request from the headers.
 
@@ -125,16 +225,16 @@ Returns the IP address of the request from the headers.
 import { ipAddress } from '@vercel/functions';
 
 export function GET(request) {
-  const ip = ipAddress(request)
-  return new Response('Your ip is' ${ip});
+  const ip = ipAddress(request);
+  return new Response(`Your IP is ${ip}`);
 }
 ```
 
 #### Parameters
 
-| Name      | Type                                        | Description                                       |
-| :-------- | :------------------------------------------ | :------------------------------------------------ |
-| `request` | [`Request`](../interfaces/index.Request.md) | The incoming request object which provides the IP |
+| Name    | Type                                                     | Description                             |
+| :------ | :------------------------------------------------------- | :-------------------------------------- |
+| `input` | `Headers` \| [`Request`](../interfaces/index.Request.md) | The incoming request object or headers. |
 
 #### Returns
 
@@ -144,7 +244,117 @@ The IP address of the request.
 
 #### Defined in
 
-[packages/functions/src/headers.ts:111](https://github.com/vercel/vercel/blob/main/packages/functions/src/headers.ts#L111)
+[packages/functions/src/headers.ts:131](https://github.com/vercel/vercel/blob/main/packages/functions/src/headers.ts#L131)
+
+---
+
+### next
+
+▸ **next**(`init?`): [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+
+Returns a Response that instructs the system to continue processing the request.
+
+**`Example`**
+
+<caption>No-op middleware</caption>
+
+```ts
+import { next } from '@vercel/edge';
+
+export default function middleware(_req: Request) {
+  return next();
+}
+```
+
+**`Example`**
+
+<caption>Add response headers to all requests</caption>
+
+```ts
+import { next } from '@vercel/edge';
+
+export default function middleware(_req: Request) {
+  return next({
+    headers: { 'x-from-middleware': 'true' },
+  });
+}
+```
+
+#### Parameters
+
+| Name    | Type                | Description                         |
+| :------ | :------------------ | :---------------------------------- |
+| `init?` | `ExtraResponseInit` | Additional options for the response |
+
+#### Returns
+
+[`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+
+#### Defined in
+
+[packages/functions/src/middleware.ts:145](https://github.com/vercel/vercel/blob/main/packages/functions/src/middleware.ts#L145)
+
+---
+
+### rewrite
+
+▸ **rewrite**(`destination`, `init?`): [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+
+Returns a response that rewrites the request to a different URL.
+
+**`Example`**
+
+<caption>Rewrite all feature-flagged requests from `/:path*` to `/experimental/:path*`</caption>
+
+```ts
+import { rewrite, next } from '@vercel/edge';
+
+export default async function middleware(req: Request) {
+  const flagged = await getFlag(req, 'isExperimental');
+  if (flagged) {
+    const url = new URL(req.url);
+    url.pathname = `/experimental{url.pathname}`;
+    return rewrite(url);
+  }
+
+  return next();
+}
+```
+
+**`Example`**
+
+<caption>JWT authentication for `/api/:path*` requests</caption>
+
+```ts
+import { rewrite, next } from '@vercel/edge';
+
+export default function middleware(req: Request) {
+  const auth = checkJwt(req.headers.get('Authorization'));
+  if (!checkJwt) {
+    return rewrite(new URL('/api/error-unauthorized', req.url));
+  }
+  const url = new URL(req.url);
+  url.searchParams.set('_userId', auth.userId);
+  return rewrite(url);
+}
+
+export const config = { matcher: '/api/users/:path*' };
+```
+
+#### Parameters
+
+| Name          | Type                                                                      | Description                         |
+| :------------ | :------------------------------------------------------------------------ | :---------------------------------- |
+| `destination` | `string` \| [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) | new URL to rewrite the request to   |
+| `init?`       | `ExtraResponseInit`                                                       | Additional options for the response |
+
+#### Returns
+
+[`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+
+#### Defined in
+
+[packages/functions/src/middleware.ts:101](https://github.com/vercel/vercel/blob/main/packages/functions/src/middleware.ts#L101)
 
 ---
 

@@ -13,12 +13,16 @@ export const help = () => `
       deploy               [path]      Performs a deployment ${chalk.bold(
         '(default)'
       )}
+      build                            Build the project locally into './vercel/output'
+      cache                [cmd]       Manages cache for your current Project
       dev                              Start a local development server
       env                              Manages the Environment Variables for your current Project
       git                              Manage Git provider repository for your current Project
       help                 [cmd]       Displays complete help for [cmd]
       init                 [example]   Initialize an example project
       inspect              [id]        Displays information related to a deployment
+      i | install          [name]      Install an integration from the Marketplace
+      integration          [cmd]       Manages your Marketplace integrations
       link                 [path]      Link local directory to a Vercel Project
       ls | list            [app]       Lists deployments
       login                [email]     Logs into your account or creates a new one
@@ -37,10 +41,12 @@ export const help = () => `
       dns                  [name]      Manages your DNS records
       domains              [name]      Manages your domain names
       logs                 [url]       Displays the logs for a deployment
+      microfrontends                   Manages your microfrontends
       projects                         Manages your Projects
       rm | remove          [id]        Removes a deployment
       teams                            Manages your teams
       whoami                           Shows the username of the currently logged in user
+      blob                 [cmd]       Manages your Blob stores and files
 
   ${chalk.dim('Global Options:')}
 
