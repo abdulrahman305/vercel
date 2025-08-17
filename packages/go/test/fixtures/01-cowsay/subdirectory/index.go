@@ -10,5 +10,5 @@ import (
 
 // Handler function
 func Handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, say.Format("subcow:" + runtime.Version() + ":RANDOMNESS_PLACEHOLDER"))
+	fmt.Fprintf(w, say.Format("subcow:"+runtime.Version()+":RANDOMNESS_PLACEHOLDER"))
 }
