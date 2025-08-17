@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
-	"net/http"
 	"go-work-with-shared/mylib"
+	"net/http"
 )
 
 // Handler function
