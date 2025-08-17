@@ -1,6 +1,6 @@
-from sanic import Sanic
-from sanic import response
-app = Sanic(name='test')
+from sanic import Sanic, response
+
+app = Sanic(name="test")
 
 
 @app.route("/api")
