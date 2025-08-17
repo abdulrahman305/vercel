@@ -11,4 +11,4 @@ app = FastAPI()
 
 @app.post("/api/hello")
 async def xinchao(data: RequestData):
-    return {'name': data.name}
+    return {"name": data.name}
