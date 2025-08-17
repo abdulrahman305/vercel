@@ -6,9 +6,4 @@ async def app(scope, receive, send):
             "status": 200,
         }
     )
-    await send(
-        {
-            "type": "http.response.body",
-            "body": b"hello world"
-        }
-    )
+    await send({"type": "http.response.body", "body": b"hello world"})
