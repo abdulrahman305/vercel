@@ -1,5 +1,39 @@
 # @vercel/next
 
+## 4.13.0
+
+### Minor Changes
+
+- Let global error handlers handle errors that next.js passes up to the function runtime rather than directly exiting the process ([#13981](https://github.com/vercel/vercel/pull/13981))
+
+## 4.12.6
+
+### Patch Changes
+
+- Add diagnostics for .next/trace-turbopack and .next/trace-build ([#13961](https://github.com/vercel/vercel/pull/13961))
+
+- Fix segment route suffix capture in dynamic routes to ensure .segments/.+\.segment\.rsc routes are properly rewritten ([#13927](https://github.com/vercel/vercel/pull/13927))
+
+## 4.12.5
+
+### Patch Changes
+
+- Add support for .well-known directory in next API route ([#13923](https://github.com/vercel/vercel/pull/13923))
+
+- Fix \_next/data middleware resolving without header ([#13924](https://github.com/vercel/vercel/pull/13924))
+
+## 4.12.4
+
+### Patch Changes
+
+- Skip adding rewrite headers when the destination has no rewritten pathname or query (and when external origin is not allowed). This prevents generating an empty `rewrite.headers` object that fails schema validation and restores previous behavior for external or no-op rewrites. ([#13844](https://github.com/vercel/vercel/pull/13844))
+
+## 4.12.3
+
+### Patch Changes
+
+- Add emitting supportsCancellation ([#13841](https://github.com/vercel/vercel/pull/13841))
+
 ## 4.12.2
 
 ### Patch Changes

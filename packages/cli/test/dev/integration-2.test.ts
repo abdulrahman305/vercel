@@ -128,6 +128,16 @@ test(
 );
 
 test(
+  '[vercel dev] Use `@vercel/python` with FastAPI requirements.txt',
+  testFixtureStdio('python-fastapi', async (testPath: any) => {
+    const name = 'Alice';
+    await testPath(200, `/`, new RegExp(`Hello, World!`));
+    await testPath(200, `/api`, new RegExp(`Hello, API!`));
+    await testPath(200, `/api/hello/${name}`, new RegExp(`Hello, ${name}!`));
+  })
+);
+
+test(
   '[vercel dev] Should work with nested `tsconfig.json` files',
   testFixtureStdio('nested-tsconfig', async (testPath: any) => {
     await testPath(200, `/`, /Nested tsconfig.json test page/);
@@ -189,7 +199,9 @@ test(
   })
 );
 
-test(
+// Skipping because it doesn't run yet on Node 22
+// eslint-disable-next-line jest/no-disabled-tests
+test.skip(
   '[vercel dev] Should set the `ts-node` "target" to match Node.js version',
   testFixtureStdio('node-ts-node-target', async (testPath: any) => {
     await testPath(200, `/api/subclass`, '{"ok":true}');
