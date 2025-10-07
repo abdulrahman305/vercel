@@ -1,5 +1,21 @@
 # vercel
 
+## 48.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`9f72ec949fb0bb62f6780a6641cc1828a618e2d7`](https://github.com/vercel/vercel/commit/9f72ec949fb0bb62f6780a6641cc1828a618e2d7), [`be090db4f0504cea4258eec835e00efe3cd31d91`](https://github.com/vercel/vercel/commit/be090db4f0504cea4258eec835e00efe3cd31d91)]:
+  - @vercel/next@4.13.2
+  - @vercel/remix-builder@5.4.13
+
+## 48.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`629b79e4a92d24c773ec6b3928e3f3274fb4dc8b`](https://github.com/vercel/vercel/commit/629b79e4a92d24c773ec6b3928e3f3274fb4dc8b), [`dfb057d11dadbf394258ece1aae823d327165a40`](https://github.com/vercel/vercel/commit/dfb057d11dadbf394258ece1aae823d327165a40)]:
+  - @vercel/next@4.13.1
+  - @vercel/hono@0.1.3
+
 ## 48.2.0
 
 ### Minor Changes
