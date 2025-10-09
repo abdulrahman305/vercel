@@ -1,5 +1,25 @@
 # vercel
 
+## 48.2.9
+
+### Patch Changes
+
+- Updated dependencies [[`42c79ea5c3b19d7a117930ddb94b5374350be8ad`](https://github.com/vercel/vercel/commit/42c79ea5c3b19d7a117930ddb94b5374350be8ad)]:
+  - @vercel/python@5.0.9
+
+## 48.2.8
+
+### Patch Changes
+
+- Update domains commands to use the new domains APIs ([#14061](https://github.com/vercel/vercel/pull/14061))
+
+## 48.2.7
+
+### Patch Changes
+
+- Updated dependencies [[`164f315092324dafdb5be3b3dd0437e6d11c92c9`](https://github.com/vercel/vercel/commit/164f315092324dafdb5be3b3dd0437e6d11c92c9)]:
+  - @vercel/next@4.13.3
+
 ## 48.2.6
 
 ### Patch Changes
