@@ -4,8 +4,8 @@
 
 ### Patch Changes
 
-- Updated dependencies [[`403588fa0039ae8e09a150a503690de214bdd040`](https://github.com/vercel/vercel/commit/403588fa0039ae8e09a150a503690de214bdd040)]:
-  - @vercel/frameworks@3.11.2
+- Updated dependencies [[`c8006b01d99a1687c5ce977c7924cafa5eac48c4`](https://github.com/vercel/vercel/commit/c8006b01d99a1687c5ce977c7924cafa5eac48c4), [`7b6f4451a0bb5f464eaf715e2b88575d4a190027`](https://github.com/vercel/vercel/commit/7b6f4451a0bb5f464eaf715e2b88575d4a190027)]:
+  - @vercel/frameworks@3.12.0
 
 ## 5.6.1
 

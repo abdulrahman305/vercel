@@ -4,13 +4,13 @@
 
 ### Minor Changes
 
-- Add vc dev support for NestJS ([#14080](https://github.com/vercel/vercel/pull/14080))
+- Add vc dev support for NestJS ([#14091](https://github.com/vercel/vercel/pull/14091))
 
 ### Patch Changes
 
-- Fix vc init express ([#14088](https://github.com/vercel/vercel/pull/14088))
+- Fix vc init express ([#14091](https://github.com/vercel/vercel/pull/14091))
 
-- Updated dependencies [[`cb6bd5a1e180847994964e0a3f44f765083deec5`](https://github.com/vercel/vercel/commit/cb6bd5a1e180847994964e0a3f44f765083deec5), [`a16adfbf0ed1b9272951b01923080990e558ac2d`](https://github.com/vercel/vercel/commit/a16adfbf0ed1b9272951b01923080990e558ac2d), [`444cd480027bd38815f55075e2dac400493faee2`](https://github.com/vercel/vercel/commit/444cd480027bd38815f55075e2dac400493faee2)]:
+- Updated dependencies [[`3599f087bbb79a3609a350500024924ca8f9601b`](https://github.com/vercel/vercel/commit/3599f087bbb79a3609a350500024924ca8f9601b), [`c8006b01d99a1687c5ce977c7924cafa5eac48c4`](https://github.com/vercel/vercel/commit/c8006b01d99a1687c5ce977c7924cafa5eac48c4), [`c8006b01d99a1687c5ce977c7924cafa5eac48c4`](https://github.com/vercel/vercel/commit/c8006b01d99a1687c5ce977c7924cafa5eac48c4), [`c8006b01d99a1687c5ce977c7924cafa5eac48c4`](https://github.com/vercel/vercel/commit/c8006b01d99a1687c5ce977c7924cafa5eac48c4)]:
   - @vercel/python@5.0.10
   - @vercel/build-utils@12.1.3
   - @vercel/node@5.4.0

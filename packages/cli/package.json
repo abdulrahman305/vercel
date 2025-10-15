@@ -101,7 +101,7 @@
     "@vercel-internals/types": "workspace:*",
     "@vercel/client": "17.0.4",
     "@vercel/error-utils": "2.0.3",
-    "@vercel/frameworks": "3.11.2",
+    "@vercel/frameworks": "3.12.0",
     "@vercel/fs-detectors": "5.6.2",
     "@vercel/routing-utils": "5.2.0",
     "@vitest/expect": "2.1.3",

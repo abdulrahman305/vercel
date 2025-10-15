@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- Updated dependencies [[`444cd480027bd38815f55075e2dac400493faee2`](https://github.com/vercel/vercel/commit/444cd480027bd38815f55075e2dac400493faee2)]:
+- Updated dependencies [[`c8006b01d99a1687c5ce977c7924cafa5eac48c4`](https://github.com/vercel/vercel/commit/c8006b01d99a1687c5ce977c7924cafa5eac48c4)]:
   - @vercel/node@5.4.0
 
 ## 0.1.5
