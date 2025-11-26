@@ -1,5 +1,28 @@
 # vercel
 
+## 48.10.14
+
+### Patch Changes
+
+- Updated dependencies [[`e2b3a0b0a939f09d8fdefc8d493733defac4997a`](https://github.com/vercel/vercel/commit/e2b3a0b0a939f09d8fdefc8d493733defac4997a)]:
+  - @vercel/backends@0.0.12
+  - @vercel/express@0.1.15
+  - @vercel/redwood@2.4.3
+  - @vercel/remix-builder@5.5.3
+  - @vercel/hono@0.2.13
+  - @vercel/next@4.15.5
+  - @vercel/node@5.5.12
+  - @vercel/elysia@0.1.10
+  - @vercel/fastify@0.1.13
+  - @vercel/h3@0.1.19
+
+## 48.10.13
+
+### Patch Changes
+
+- Updated dependencies [[`611b2432b600381d5bebb4245765d411e62895b3`](https://github.com/vercel/vercel/commit/611b2432b600381d5bebb4245765d411e62895b3)]:
+  - @vercel/next@4.15.4
+
 ## 48.10.12
 
 ### Patch Changes
